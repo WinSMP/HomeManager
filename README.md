@@ -22,7 +22,7 @@ HomeManager does not have any configuration but I will eventually plan on implem
 After cloning the repository, you can build the project by running:
 
 ```shell
-mvn clean package
+./gradlew build
 ```
 
 This will generate the plugin JAR file located in the `target/` directory.
@@ -96,4 +96,4 @@ Here are some useful links to the HomeManager project:
 
 ## Licensing
 
-The code in this project is licensed under the [GPL-3.0](LICENSE.md).
+The code in this project is licensed under the [GPL-3.0](LICENSE).
