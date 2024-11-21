@@ -1,0 +1,11 @@
+main: org.winlogon.HomeManager.HomeManagerPlugin
+name: HomeManager
+version: "0.1.0"
+api-version: "1.21.1"
+author: winlogon
+description: A basic command for /home
+commands:
+  home:
+    description: Base command for /home
+    usage: "For a list of commands, type /home help"
+    aliases: base
