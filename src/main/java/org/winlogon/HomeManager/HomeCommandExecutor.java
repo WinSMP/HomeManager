@@ -1,6 +1,5 @@
 package org.winlogon.HomeManager;
 
-import org.winlogon.HomeManager.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -35,13 +34,13 @@ public class HomeCommandExecutor implements CommandExecutor {
                     }
                     String homeName = args[1];
                     DatabaseHandler.saveHome(player, homeName, player.getLocation());
-                    player.sendMessage(ChatColor.GREEN + "Home " + homeName + " created!");
+                    player.sendMessage(ChatColor.GREEN + "Home " + ChatColor.DARK_AQUA + homeName + ChatColor.GREEN + " created.");
                     break;
 
                 case "list":
                     List<String> homes = DatabaseHandler.getHomes(player);
                     player.sendMessage(ChatColor.AQUA + "Your homes: " + 
-                        (homes.isEmpty() ? ChatColor.GRAY + "None" : ChatColor.WHITE + String.join(", ", homes)));
+                        (homes.isEmpty() ? ChatColor.GRAY + "None" : ChatColor.GRAY + String.join(", ", homes)));
                     break;
 
                 case "delete":
