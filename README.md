@@ -34,11 +34,11 @@ To deploy the plugin to your Minecraft server, simply copy the generated JAR fil
 ## Features
 
 HomeManager provides several features for managing player homes:
-* **Create Homes**: Players can create homes at their current location using `/home create <home name>`.
-* **List Homes**: Players can list all their saved homes using `/home list`.
-* **Delete Homes**: Homes can be deleted using `/home delete <home name>`.
-* **Teleport to Homes**: Players can teleport to their saved homes using `/home teleport <home name>`.
-* **Update Home Locations**: Players can update the location of an existing home with `/home set <home name>`.
+* **Create homes**: Players can create homes at their current location using `/home create <home name>`.
+* **List homes**: Players can list all their saved homes using `/home list`.
+* **Delete homes**: Homes can be deleted using `/home delete <home name>`.
+* **Teleport to homes**: Players can teleport to their saved homes using `/home teleport <home name>`.
+* **Update home locations**: Players can update the location of an existing home with `/home set <home name>`.
 
 ## Configuration
 
@@ -90,9 +90,9 @@ Feel free to open an issue if you encounter any bugs or have feature requests.
 
 Here are some useful links to the HomeManager project:
 
-- Project homepage: https://github.com/walker84837/HomeManager/
-- Repository: https://github.com/walker84837/HomeManager/
-- Issue tracker: https://github.com/walker84837/HomeManager/issues
+- Project homepage: <https://github.com/walker84837/HomeManager>
+- Repository: <https://github.com/walker84837/HomeManager>
+- Issue tracker: <https://github.com/walker84837/HomeManager/issues>
 
 ## Licensing
 
