@@ -4,6 +4,7 @@ version: "0.1.0"
 api-version: "1.21.1"
 author: winlogon
 description: A basic command for /home
+folia-supported: true
 commands:
   home:
     description: Base command for /home

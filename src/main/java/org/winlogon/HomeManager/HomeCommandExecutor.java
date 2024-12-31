@@ -14,7 +14,7 @@ public class HomeCommandExecutor implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player)) {
-            sender.sendMessage(ChatColor.RED + "Only players can use this command.");
+            sender.sendMessage("§cOnly players can use this command.");
             return true;
         }
 
@@ -29,52 +29,53 @@ public class HomeCommandExecutor implements CommandExecutor {
             switch (args[0].toLowerCase()) {
                 case "create":
                     if (args.length != 2) {
-                        player.sendMessage(ChatColor.YELLOW + "Usage: /home create <house name>");
+                        player.sendMessage("§eUsage: /home create <house name>");
                         return true;
                     }
                     String homeName = args[1];
                     DatabaseHandler.saveHome(player, homeName, player.getLocation());
-                    player.sendMessage(ChatColor.GREEN + "Home " + ChatColor.DARK_AQUA + homeName + ChatColor.GREEN + " created.");
+                    player.sendMessage("§7Home §3" + homeName + "§7 created.");
                     break;
 
                 case "list":
                     List<String> homes = DatabaseHandler.getHomes(player);
-                    player.sendMessage(ChatColor.AQUA + "Your homes: " + 
-                        (homes.isEmpty() ? ChatColor.GRAY + "None" : ChatColor.GRAY + String.join(", ", homes)));
+                    player.sendMessage("§7Your homes: §3" + 
+                        (homes.isEmpty() ? "None" : String.join(", ", homes)));
                     break;
 
                 case "delete":
                     if (args.length != 2) {
-                        player.sendMessage(ChatColor.YELLOW + "Usage: /home delete <house name>");
+                        player.sendMessage("§eUsage: /home delete <house name>");
                         return true;
                     }
                     String homeToDelete = args[1];
                     DatabaseHandler.deleteHome(player, homeToDelete);
-                    player.sendMessage(ChatColor.RED + "Home " + homeToDelete + " deleted.");
+                    player.sendMessage("§cHome " + homeToDelete + " deleted.");
                     break;
 
                 case "set":
                     if (args.length != 2) {
-                        player.sendMessage(ChatColor.YELLOW + "Usage: /home set <house name>");
+                        player.sendMessage("§eUsage: /home set <house name>");
                         return true;
                     }
                     String homeToUpdate = args[1];
                     DatabaseHandler.saveHome(player, homeToUpdate, player.getLocation());
-                    player.sendMessage(ChatColor.GREEN + "Home " + homeToUpdate + " updated!");
+                    player.sendMessage("§7Home §3" +  homeToUpdate + "§7 updated!");
                     break;
 
                 case "teleport":
                     if (args.length != 2) {
-                        player.sendMessage(ChatColor.YELLOW + "Usage: /home teleport <house name>");
+                        player.sendMessage("§eUsage: /home teleport <house name>");
                         return true;
                     }
                     String homeToTeleport = args[1];
                     Location homeLocation = DatabaseHandler.getHomeLocation(player, homeToTeleport);
                     if (homeLocation == null) {
-                        player.sendMessage(ChatColor.RED + "Home " + homeToTeleport + " does not exist.");
+                        player.sendMessage("§cHome " + homeToTeleport + " does not exist.");
                     } else {
-                        player.teleport(homeLocation);
-                        player.sendMessage(ChatColor.GREEN + "Teleported to home: " + homeToTeleport);
+                        // player.teleport(homeLocation);
+                        teleportPlayer(player, homeLocation);
+                        player.sendMessage("§7Teleported to home: §3" + homeToTeleport);
                     }
                     break;
 
@@ -84,7 +85,7 @@ public class HomeCommandExecutor implements CommandExecutor {
                     break;
             }
         } catch (SQLException e) {
-            player.sendMessage(ChatColor.RED + "An error occurred while processing your command.");
+            player.sendMessage("§cAn error occurred while processing your command.");
             e.printStackTrace();
         }
 
@@ -92,12 +93,29 @@ public class HomeCommandExecutor implements CommandExecutor {
     }
 
     private void showHelp(Player player) {
-        player.sendMessage(ChatColor.GOLD + "Home Commands:");
-        player.sendMessage("- " + ChatColor.YELLOW + "/home create <house name> " + ChatColor.WHITE + ":: Create a new home at your current position.");
-        player.sendMessage("- " + ChatColor.YELLOW + "/home list " + ChatColor.WHITE + ":: List all your homes.");
-        player.sendMessage("- " + ChatColor.YELLOW + "/home delete <house name> " + ChatColor.WHITE + ":: Delete a home.");
-        player.sendMessage("- " + ChatColor.YELLOW + "/home set <house name> " + ChatColor.WHITE + ":: Update a home location to be at your position.");
-        player.sendMessage("- " + ChatColor.YELLOW + "/home teleport <house name> " + ChatColor.WHITE + ":: Teleport to a saved home.");
-        player.sendMessage("- " + ChatColor.YELLOW + "/home help " + ChatColor.WHITE + ":: Show this help menu.");
+        player.sendMessage("§6Home Commands:");
+        player.sendMessage("- §e/home create <house name> §f:: Create a new home at your current position.");
+        player.sendMessage("- §e/home list §f:: List all your homes.");
+        player.sendMessage("- §e/home delete <house name> §f:: Delete a home.");
+        player.sendMessage("- §e/home set <house name> §f:: Update a home location to be at your position.");
+        player.sendMessage("- §e/home teleport <house name> §f:: Teleport to a saved home.");
+        player.sendMessage("- §e/home help §f:: Show this help menu.");
+    }
+
+    private void teleportPlayer(Player player, Location location) {
+        if (isFolia()) {
+            player.teleportAsync(location);
+        } else {
+            player.teleport(location);
+        }
+    }
+
+    private boolean isFolia() {
+        try {
+            Class.forName("io.papermc.paper.threadedregions.RegionizedServer");
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
     }
 }
