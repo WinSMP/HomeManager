@@ -33,14 +33,14 @@ public class HomeCommandExecutor implements CommandExecutor {
                         return true;
                     }
                     String homeName = args[1];
-                    DatabaseHandler.saveHome(player, homeName, player.getLocation());
+                    DatabaseHandler.createHome(player, homeName, player.getLocation());
                     player.sendMessage("§7Home §3" + homeName + "§7 created.");
                     break;
 
                 case "list":
                     List<String> homes = DatabaseHandler.getHomes(player);
-                    player.sendMessage("§7Your homes: §3" + 
-                        (homes.isEmpty() ? "None" : String.join(", ", homes)));
+                    String homeList = homes.isEmpty() ? "None" : String.join(", ", homes);
+                    player.sendMessage("§7Your homes: §3" + homeList);
                     break;
 
                 case "delete":
@@ -59,8 +59,13 @@ public class HomeCommandExecutor implements CommandExecutor {
                         return true;
                     }
                     String homeToUpdate = args[1];
-                    DatabaseHandler.saveHome(player, homeToUpdate, player.getLocation());
-                    player.sendMessage("§7Home §3" +  homeToUpdate + "§7 updated!");
+                    // Check if the home exists before updating
+                    if (DatabaseHandler.getHomeLocation(player, homeToUpdate) == null) {
+                        player.sendMessage("§cHome " + homeToUpdate + " does not exist. Use /home create to make a new home.");
+                    } else {
+                        DatabaseHandler.updateHome(player, homeToUpdate, player.getLocation());
+                        player.sendMessage("§7Home §3" + homeToUpdate + "§7 updated!");
+                    }
                     break;
 
                 case "teleport":
@@ -73,7 +78,6 @@ public class HomeCommandExecutor implements CommandExecutor {
                     if (homeLocation == null) {
                         player.sendMessage("§cHome " + homeToTeleport + " does not exist.");
                     } else {
-                        // player.teleport(homeLocation);
                         teleportPlayer(player, homeLocation);
                         player.sendMessage("§7Teleported to home: §3" + homeToTeleport);
                     }
@@ -85,8 +89,14 @@ public class HomeCommandExecutor implements CommandExecutor {
                     break;
             }
         } catch (SQLException e) {
-            player.sendMessage("§cAn error occurred while processing your command.");
-            e.printStackTrace();
+            if (e.getMessage().equals("Home already exists")) {
+                player.sendMessage("§cA home with that name already exists.");
+            } else if (e.getMessage().equals("Home does not exist")) {
+                player.sendMessage("§cThat home does not exist. Use /home create to make a new home.");
+            } else {
+                player.sendMessage("§cAn error occurred while processing your command.");
+                e.printStackTrace();
+            }
         }
 
         return true;
