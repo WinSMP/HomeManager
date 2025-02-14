@@ -15,14 +15,19 @@ public class HomeTabCompleter implements TabCompleter {
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         if (!(sender instanceof Player)) return Collections.emptyList();
-
+        final List<String> subcommands = Arrays.asList(
+            "create", "list", "delete", "teleport", "set", "help"
+        );
+        final List<String> completeSubcommands = Arrays.asList(
+            "list", "delete", "teleport", "set"
+        );
         Player player = (Player) sender;
 
         if (args.length == 1) {
-            return Arrays.asList("create", "list", "delete", "teleport", "set", "help");
+            return subcommands;
         }
 
-        if (args.length == 2 && (args[0].equalsIgnoreCase("delete") || args[0].equalsIgnoreCase("set"))) {
+        if (args.length == 2 && completeSubcommands.contains(args[0])) {
             try {
                 return DatabaseHandler.getHomes(player);
             } catch (SQLException e) {
