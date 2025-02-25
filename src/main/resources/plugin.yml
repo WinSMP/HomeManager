@@ -1,12 +1,11 @@
 main: org.winlogon.HomeManager.HomeManagerPlugin
 name: HomeManager
-version: "0.1.0"
+version: "0.2.0-SNAPSHOT"
 api-version: "1.21.1"
 author: winlogon
-description: A basic command for /home
+description: A home plugin to store your home's coordinates
 folia-supported: true
 commands:
   home:
     description: Base command for /home
     usage: "For a list of commands, type /home help"
-    aliases: base
