@@ -1,7 +1,6 @@
 package org.winlogon.homemanager;
 
 import dev.jorel.commandapi.CommandAPICommand;
-import dev.jorel.commandapi.CommandPermission;
 import dev.jorel.commandapi.arguments.ArgumentSuggestions;
 import dev.jorel.commandapi.arguments.StringArgument;
 import org.bukkit.Location;
@@ -15,6 +14,7 @@ public class CommandHandler {
     
     public static void registerCommands() {
         new CommandAPICommand("home")
+            .withShortDescription("Manage your homes")
             .withSubcommand(new CommandAPICommand("create")
                 .withArguments(new StringArgument("name"))
                 .executesPlayer((player, args) -> {
