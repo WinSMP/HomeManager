@@ -42,14 +42,7 @@ public class CommandHandler {
             .withSubcommand(new CommandAPICommand("delete")
                 .withArguments(new StringArgument("home-name").replaceSuggestions(ArgumentSuggestions.strings((info) -> {
                     CommandSender sender = info.sender();
-                    if (sender instanceof Player player) {
-                        try {
-                            return DatabaseHandler.getHomes(player).toArray(new String[0]);
-                        } catch (SQLException e) {
-                            return new String[0];
-                        }
-                    }
-                    return new String[0];
+                    return getHomesOfSender(sender);
                 })))
                 .executesPlayer((player, args) -> {
                     String homeName = (String) args.get("home-name");
@@ -61,43 +54,29 @@ public class CommandHandler {
                     }
                 })
             )
-                .withSubcommand(new CommandAPICommand("set")
-                    .withArguments(new StringArgument("home-name").replaceSuggestions(ArgumentSuggestions.strings((info) -> {
-                        CommandSender sender = info.sender();
-                        if (sender instanceof Player player) {
-                            try {
-                                return DatabaseHandler.getHomes(player).toArray(new String[0]);
-                            } catch (SQLException e) {
-                                return new String[0];
-                            }
+            .withSubcommand(new CommandAPICommand("set")
+                .withArguments(new StringArgument("home-name").replaceSuggestions(ArgumentSuggestions.strings((info) -> {
+                    CommandSender sender = info.sender();
+                    return getHomesOfSender(sender);
+                })))
+                .executesPlayer((player, args) -> {
+                    String homeName = (String) args.get("home-name");
+                    try {
+                        if (DatabaseHandler.getHomeLocation(player, homeName) == null) {
+                            player.sendMessage("§cHome " + homeName + " does not exist.");
+                        } else {
+                            DatabaseHandler.updateHome(player, homeName, player.getLocation());
+                            player.sendMessage("§7Home §3" + homeName + "§7 updated!");
                         }
-                        return new String[0];
-                    }))) // Added an extra closing parenthesis here
-                    .executesPlayer((player, args) -> {
-                        String homeName = (String) args.get("home-name");
-                        try {
-                            if (DatabaseHandler.getHomeLocation(player, homeName) == null) {
-                                player.sendMessage("§cHome " + homeName + " does not exist.");
-                            } else {
-                                DatabaseHandler.updateHome(player, homeName, player.getLocation());
-                                player.sendMessage("§7Home §3" + homeName + "§7 updated!");
-                            }
-                        } catch (SQLException e) {
-                            player.sendMessage("§cAn error occurred while updating your home.");
-                        }
-                    })
-                )
+                    } catch (SQLException e) {
+                        player.sendMessage("§cAn error occurred while updating your home.");
+                    }
+                })
+            )
             .withSubcommand(new CommandAPICommand("teleport")
                 .withArguments(new StringArgument("home-name").replaceSuggestions(ArgumentSuggestions.strings((info) -> {
                     CommandSender sender = info.sender();
-                    if (sender instanceof Player player) {
-                        try {
-                            return DatabaseHandler.getHomes(player).toArray(new String[0]);
-                        } catch (SQLException e) {
-                            return new String[0];
-                        }
-                    }
-                    return new String[0];
+                    return getHomesOfSender(sender);
                 })))
                 .executesPlayer((player, args) -> {
                     String homeName = (String) args.get("home-name");
@@ -132,5 +111,16 @@ public class CommandHandler {
         } catch (ClassNotFoundException e) {
             return false;
         }
+    }
+
+    private static String[] getHomesOfSender(CommandSender sender) {
+        if (sender instanceof Player player) {
+            try {
+                return DatabaseHandler.getHomes(player).toArray(new String[0]);
+            } catch (SQLException e) {
+                return new String[0];
+            }
+        }
+        return new String[0];
     }
 }
