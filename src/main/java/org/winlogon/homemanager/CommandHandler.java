@@ -15,7 +15,6 @@ public class CommandHandler {
     
     public static void registerCommands() {
         new CommandAPICommand("home")
-            .withPermission(CommandPermission.fromString("homemanager.use"))
             .withSubcommand(new CommandAPICommand("create")
                 .withArguments(new StringArgument("name"))
                 .executesPlayer((player, args) -> {
