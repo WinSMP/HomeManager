@@ -32,6 +32,10 @@ version = when {
     else -> shortVersion
 }
 
+val minecraftBase = rootProject.extra["minecraftBase"] as String
+val minecraftPatch = rootProject.extra["minecraftPatch"] as String
+val projectDescription = rootProject.extra["projectDescription"] as String
+
 java {
     sourceCompatibility = JavaVersion.VERSION_21
     targetCompatibility = JavaVersion.VERSION_21
@@ -69,7 +73,7 @@ repositories {
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
-    implementation("io.papermc:paperlib:1.0.8")
+    implementation("io.papermc:paperlib:1.0.7")
     implementation("com.github.walker84837:JResult:1.1.0")
     testImplementation("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
     testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
@@ -85,7 +89,9 @@ tasks.processResources {
         expand(mapOf(
             "NAME" to rootProject.name,
             "VERSION" to version,
-            "PACKAGE" to project.group.toString()
+            "PACKAGE" to project.group.toString(),
+	    "DESCRIPTION" to projectDescription,
+            "MCVERSION" to minecraftBase,
         ))
     }
 }

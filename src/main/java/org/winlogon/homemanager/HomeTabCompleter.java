@@ -1,4 +1,4 @@
-package org.winlogon.HomeManager;
+package org.winlogon.homemanager;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;

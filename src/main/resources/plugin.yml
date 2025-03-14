@@ -1,9 +1,9 @@
-main: org.winlogon.HomeManager.HomeManagerPlugin
-name: HomeManager
-version: "0.2.0-SNAPSHOT"
-api-version: "1.21.1"
+name: ${NAME}
+main: ${PACKAGE}.HomeManagerPlugin
+version: ${VERSION}
+api-version: ${MCVERSION}
 author: winlogon
-description: A home plugin to store your home's coordinates
+description: ${DESCRIPTION}
 folia-supported: true
 commands:
   home:

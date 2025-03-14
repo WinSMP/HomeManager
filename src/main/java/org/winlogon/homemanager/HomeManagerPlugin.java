@@ -1,4 +1,4 @@
-package org.winlogon.HomeManager;
+package org.winlogon.homemanager;
 
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -9,8 +9,10 @@ public class HomeManagerPlugin extends JavaPlugin {
         saveDefaultConfig();
         DatabaseHandler.setupDatabase(getDataFolder());
         
-        getCommand("home").setExecutor(new HomeCommandExecutor());
-        getCommand("home").setTabCompleter(new HomeTabCompleter());
+        getCommand("home")
+            .setExecutor(new HomeCommandExecutor());
+        getCommand("home")
+            .setTabCompleter(new HomeTabCompleter());
     }
 
     @Override
