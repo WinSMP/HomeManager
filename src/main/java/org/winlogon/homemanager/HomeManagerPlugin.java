@@ -8,11 +8,7 @@ public class HomeManagerPlugin extends JavaPlugin {
     public void onEnable() {
         saveDefaultConfig();
         DatabaseHandler.setupDatabase(getDataFolder());
-        
-        getCommand("home")
-            .setExecutor(new HomeCommandExecutor());
-        getCommand("home")
-            .setTabCompleter(new HomeTabCompleter());
+        CommandHandler.registerCommands();
     }
 
     @Override
