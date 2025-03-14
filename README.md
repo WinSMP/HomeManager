@@ -96,4 +96,4 @@ Here are some useful links to the HomeManager project:
 
 ## Licensing
 
-The code in this project is licensed under the [GPL-3.0](LICENSE).
+The code in this project is licensed under the [MPL-2.0](LICENSE).
