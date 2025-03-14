@@ -73,7 +73,7 @@ dependencies {
     implementation("io.papermc:paperlib:1.0.7")
     testImplementation("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
     testImplementation("org.junit.jupiter:junit-jupiter:5.12.0")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.11.4")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.12.0")
 }
 
 tasks.test {
@@ -81,7 +81,7 @@ tasks.test {
 }
 
 tasks.processResources {
-    filesMatching("**/plugin.yml") {
+    filesMatching("**/paper-plugin.yml") {
         expand(mapOf(
             "NAME" to rootProject.name,
             "VERSION" to version,
