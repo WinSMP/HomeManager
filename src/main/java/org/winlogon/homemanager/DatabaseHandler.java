@@ -11,11 +11,15 @@ import java.util.List;
 
 public class DatabaseHandler {
 
-    private static Connection connection;
+    private Connection connection;
 
-    public static void setupDatabase(File dataFolder) {
+    public DatabaseHandler(File dataFolder) {
+        setupDatabase(dataFolder);
+    }
+
+    private void setupDatabase(File dataFolder) {
         try {
-            File databaseFile = new File(dataFolder, "homes.db");
+            var databaseFile = new File(dataFolder, "homes.db");
             connection = DriverManager.getConnection("jdbc:sqlite:" + databaseFile.getAbsolutePath());
             try (Statement stmt = connection.createStatement()) {
                 stmt.executeUpdate("CREATE TABLE IF NOT EXISTS homes (" +
@@ -39,7 +43,7 @@ public class DatabaseHandler {
      * @param homeName The name of the home
      * @param location The new location of the home
      */
-    public static void updateHome(Player player, String homeName, Location location) throws SQLException {
+    public void updateHome(Player player, String homeName, Location location) throws SQLException {
         try (PreparedStatement stmt = connection.prepareStatement(
                 "UPDATE homes SET world_name = ?, x = ?, y = ?, z = ? WHERE player_uuid = ? AND home_name = ?")) {
             stmt.setString(1, location.getWorld().getName());
@@ -63,7 +67,7 @@ public class DatabaseHandler {
      * @param location The location of the home
      * @throws SQLException If the home already exists
      */
-    public static void createHome(Player player, String homeName, Location location) throws SQLException {
+    public void createHome(Player player, String homeName, Location location) throws SQLException {
         try (PreparedStatement stmt = connection.prepareStatement(
                 "INSERT INTO homes (player_uuid, home_name, world_name, x, y, z) VALUES (?, ?, ?, ?, ?, ?)")) {
             stmt.setString(1, player.getUniqueId().toString());
@@ -90,7 +94,7 @@ public class DatabaseHandler {
      * @return The location of the home
      * @throws SQLException If the home does not exist
      */
-    public static Location getHomeLocation(Player player, String homeName) throws SQLException {
+    public Location getHomeLocation(Player player, String homeName) throws SQLException {
         Location location = null;
         try (PreparedStatement stmt = connection.prepareStatement(
                 "SELECT world_name, x, y, z FROM homes WHERE player_uuid = ? AND home_name = ?")) {
@@ -118,7 +122,7 @@ public class DatabaseHandler {
      * @return A list of home names
      * @throws SQLException If there is a database error
      */
-    public static List<String> getHomes(Player player) throws SQLException {
+    public List<String> getHomes(Player player) throws SQLException {
         List<String> homes = new ArrayList<>();
         try (PreparedStatement stmt = connection.prepareStatement(
                 "SELECT home_name FROM homes WHERE player_uuid = ?")) {
@@ -139,7 +143,7 @@ public class DatabaseHandler {
      * @param homeName The name of the home
      * @throws SQLException If the home does not exist
      */
-    public static void deleteHome(Player player, String homeName) throws SQLException {
+    public void deleteHome(Player player, String homeName) throws SQLException {
         try (PreparedStatement stmt = connection.prepareStatement(
                 "DELETE FROM homes WHERE player_uuid = ? AND home_name = ?")) {
             stmt.setString(1, player.getUniqueId().toString());
@@ -151,7 +155,7 @@ public class DatabaseHandler {
     /**
      * Close the database connection
      */
-    public static void closeConnection() {
+    public void closeConnection() {
         try {
             if (connection != null && !connection.isClosed()) {
                 connection.close();
