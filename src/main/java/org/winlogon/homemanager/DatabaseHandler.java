@@ -22,14 +22,16 @@ public class DatabaseHandler {
             var databaseFile = new File(dataFolder, "homes.db");
             connection = DriverManager.getConnection("jdbc:sqlite:" + databaseFile.getAbsolutePath());
             try (Statement stmt = connection.createStatement()) {
-                stmt.executeUpdate("CREATE TABLE IF NOT EXISTS homes (" +
-                        "player_uuid TEXT, " +
-                        "home_name TEXT, " +
-                        "world_name TEXT, " +
-                        "x REAL, " +
-                        "y REAL, " +
-                        "z REAL, " +
-                        "PRIMARY KEY (player_uuid, home_name))");
+                stmt.executeUpdate("""
+                        CREATE TABLE IF NOT EXISTS homes (
+                            player_uuid TEXT,
+                            home_name TEXT,
+                            world_name TEXT,
+                            x REAL,
+                            y REAL,
+                            z REAL,
+                            PRIMARY KEY (player_uuid, home_name))
+                        """);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -102,12 +104,11 @@ public class DatabaseHandler {
             stmt.setString(2, homeName);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    String worldName = rs.getString("world_name");
-                    double x = rs.getDouble("x");
-                    double y = rs.getDouble("y");
-                    double z = rs.getDouble("z");
+                    var worldName = rs.getString("world_name");
+                    var x = rs.getDouble("x");
+                    var y = rs.getDouble("y");
+                    var z = rs.getDouble("z");
 
-                    // Get the world object based on the world name from the database
                     location = new Location(Bukkit.getWorld(worldName), x, y, z);
                 }
             }
