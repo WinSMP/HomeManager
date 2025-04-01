@@ -9,11 +9,15 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.sql.SQLException;
-import java.util.List;
 
 public class CommandHandler {
+    private DatabaseHandler databaseHandler;
+
+    public CommandHandler(DatabaseHandler databaseHandler) {
+        this.databaseHandler = databaseHandler;
+    }
     
-    public static void registerCommands() {
+    public void registerCommands() {
         new CommandAPICommand("home")
             .withShortDescription("Manage your homes")
             .withSubcommand(new CommandAPICommand("create")
@@ -57,13 +61,13 @@ public class CommandHandler {
             .register();
     }
 
-    private static void setHome(CommandArguments args, Player player) {
-        String homeName = (String) args.get("home-name");
+    private void setHome(CommandArguments args, Player player) {
+        var homeName = (String) args.get("home-name");
         try {
-            if (DatabaseHandler.getHomeLocation(player, homeName) == null) {
+            if (databaseHandler.getHomeLocation(player, homeName) == null) {
                 player.sendMessage("§cHome " + homeName + " does not exist.");
             } else {
-                DatabaseHandler.updateHome(player, homeName, player.getLocation());
+                databaseHandler.updateHome(player, homeName, player.getLocation());
                 player.sendMessage("§7Home §3" + homeName + "§7 updated!");
             }
         } catch (SQLException e) {
@@ -71,10 +75,10 @@ public class CommandHandler {
         }
     }
 
-    private static void teleportHome(CommandArguments args, Player player) {
-        String homeName = (String) args.get("home-name");
+    private void teleportHome(CommandArguments args, Player player) {
+        var homeName = (String) args.get("home-name");
         try {
-            Location homeLocation = DatabaseHandler.getHomeLocation(player, homeName);
+            Location homeLocation = databaseHandler.getHomeLocation(player, homeName);
             if (homeLocation == null) {
                 player.sendMessage("§cHome " + homeName + " does not exist.");
             } else {
@@ -86,37 +90,37 @@ public class CommandHandler {
         }
     }
 
-    private static void deleteHome(CommandArguments args, Player player) {
-        String homeName = (String) args.get("home-name");
+    private void deleteHome(CommandArguments args, Player player) {
+        var homeName = (String) args.get("home-name");
         try {
-            DatabaseHandler.deleteHome(player, homeName);
+            databaseHandler.deleteHome(player, homeName);
             player.sendMessage("§cHome " + homeName + " deleted.");
         } catch (SQLException e) {
             player.sendMessage("§cThat home does not exist.");
         }
     }
 
-    private static void createHome(CommandArguments args, Player player) {
-        String homeName = (String) args.get("name");
+    private void createHome(CommandArguments args, Player player) {
+        var homeName = (String) args.get("name");
         try {
-            DatabaseHandler.createHome(player, homeName, player.getLocation());
+            databaseHandler.createHome(player, homeName, player.getLocation());
             player.sendMessage("§7Home §3" + homeName + "§7 created.");
         } catch (SQLException e) {
             player.sendMessage("§cA home with that name already exists.");
         }
     }
 
-    private static void listHomes(CommandArguments args, Player player) {
+    private void listHomes(CommandArguments args, Player player) {
         try {
-            List<String> homes = DatabaseHandler.getHomes(player);
-            String homeList = homes.isEmpty() ? "None" : String.join(", ", homes);
+            var homes = databaseHandler.getHomes(player);
+            var homeList = homes.isEmpty() ? "None" : String.join(", ", homes);
             player.sendMessage("§7Your homes: §3" + homeList);
         } catch (SQLException e) {
             player.sendMessage("§cAn error occurred while fetching your homes.");
         }
     }
 
-    private static void teleportPlayer(Player player, Location location) {
+    private void teleportPlayer(Player player, Location location) {
         if (isFolia()) {
             player.teleportAsync(location);
         } else {
@@ -124,7 +128,7 @@ public class CommandHandler {
         }
     }
 
-    private static boolean isFolia() {
+    private boolean isFolia() {
         try {
             Class.forName("io.papermc.paper.threadedregions.RegionizedServer");
             return true;
@@ -133,10 +137,10 @@ public class CommandHandler {
         }
     }
 
-    private static String[] getHomesOfSender(CommandSender sender) {
+    private String[] getHomesOfSender(CommandSender sender) {
         if (sender instanceof Player player) {
             try {
-                return DatabaseHandler.getHomes(player).toArray(new String[0]);
+                return databaseHandler.getHomes(player).toArray(new String[0]);
             } catch (SQLException e) {
                 return new String[0];
             }
