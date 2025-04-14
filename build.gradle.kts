@@ -85,7 +85,7 @@ tasks.processResources {
             "NAME" to rootProject.name,
             "VERSION" to version,
             "PACKAGE" to project.group.toString(),
-	    "DESCRIPTION" to projectDescription,
+	        "DESCRIPTION" to projectDescription,
             "MCVERSION" to minecraftBase,
         ))
     }
@@ -109,6 +109,10 @@ tasks.register("printProjectName") {
     doLast {
         println(rootProject.name)
     }
+}
+
+tasks.withType<JavaCompile>().configureEach {
+    options.compilerArgs.add("--enable-preview")
 }
 
 tasks.register("release") {

@@ -3,12 +3,16 @@ package org.winlogon.homemanager;
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.arguments.ArgumentSuggestions;
 import dev.jorel.commandapi.executors.CommandArguments;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import dev.jorel.commandapi.arguments.StringArgument;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.sql.SQLException;
+import java.util.Optional;
 
 public class CommandHandler {
     private DatabaseHandler databaseHandler;
@@ -33,8 +37,7 @@ public class CommandHandler {
             )
             .withSubcommand(new CommandAPICommand("delete")
                 .withArguments(new StringArgument("home-name").replaceSuggestions(ArgumentSuggestions.strings((info) -> {
-                    CommandSender sender = info.sender();
-                    return getHomesOfSender(sender);
+                    return getHomesOfSender(info.sender());
                 })))
                 .executesPlayer((player, args) -> {
                     deleteHome(args, player);
@@ -42,8 +45,7 @@ public class CommandHandler {
             )
             .withSubcommand(new CommandAPICommand("set")
                 .withArguments(new StringArgument("home-name").replaceSuggestions(ArgumentSuggestions.strings((info) -> {
-                    CommandSender sender = info.sender();
-                    return getHomesOfSender(sender);
+                    return getHomesOfSender(info.sender());
                 })))
                 .executesPlayer((player, args) -> {
                     setHome(args, player);
@@ -51,8 +53,7 @@ public class CommandHandler {
             )
             .withSubcommand(new CommandAPICommand("teleport")
                 .withArguments(new StringArgument("home-name").replaceSuggestions(ArgumentSuggestions.strings((info) -> {
-                    CommandSender sender = info.sender();
-                    return getHomesOfSender(sender);
+                    return getHomesOfSender(info.sender());
                 })))
                 .executesPlayer((player, args) -> {
                     teleportHome(args, player);
@@ -65,28 +66,40 @@ public class CommandHandler {
         var homeName = (String) args.get("home-name");
         try {
             if (databaseHandler.getHomeLocation(player, homeName) == null) {
-                player.sendMessage("§cHome " + homeName + " does not exist.");
+                player.sendRichMessage(
+                    "<red>Home <home-name> does not exist.</red>", 
+                    Placeholder.component("home-name", Component.text(homeName, NamedTextColor.DARK_AQUA))
+                );
             } else {
                 databaseHandler.updateHome(player, homeName, player.getLocation());
-                player.sendMessage("§7Home §3" + homeName + "§7 updated!");
+                player.sendRichMessage(
+                    "<gray>Home <home-name> updated!</gray>",
+                    Placeholder.component("home-name", Component.text(homeName, NamedTextColor.DARK_AQUA))
+                );
             }
         } catch (SQLException e) {
-            player.sendMessage("§cAn error occurred while updating your home.");
+            player.sendRichMessage("<red>An error occurred while updating your home.</red>");
         }
     }
 
     private void teleportHome(CommandArguments args, Player player) {
         var homeName = (String) args.get("home-name");
         try {
-            Location homeLocation = databaseHandler.getHomeLocation(player, homeName);
-            if (homeLocation == null) {
-                player.sendMessage("§cHome " + homeName + " does not exist.");
+            var homeLocation = Optional.ofNullable(databaseHandler.getHomeLocation(player, homeName));
+            if (homeLocation.isPresent()) {
+                teleportPlayer(player, homeLocation.get());
+                player.sendRichMessage(
+                    "<gray>Teleported to home: <home-name></gray>",
+                    Placeholder.component("home-name", Component.text(homeName, NamedTextColor.DARK_AQUA))
+                );
             } else {
-                teleportPlayer(player, homeLocation);
-                player.sendMessage("§7Teleported to home: §3" + homeName);
+                player.sendRichMessage(
+                    "<red>Home <home-name> does not exist.</red>",
+                    Placeholder.component("home-name", Component.text(homeName, NamedTextColor.DARK_AQUA))
+                );
             }
         } catch (SQLException e) {
-            player.sendMessage("§cAn error occurred while teleporting.");
+            player.sendRichMessage("<red>An error occurred while teleporting.</red>");
         }
     }
 
@@ -94,9 +107,12 @@ public class CommandHandler {
         var homeName = (String) args.get("home-name");
         try {
             databaseHandler.deleteHome(player, homeName);
-            player.sendMessage("§cHome " + homeName + " deleted.");
+            player.sendRichMessage(
+                "<red>Home <home-name> deleted.</red>",
+                Placeholder.component("home-name", Component.text(homeName, NamedTextColor.DARK_AQUA))
+            );
         } catch (SQLException e) {
-            player.sendMessage("§cThat home does not exist.");
+            player.sendRichMessage("<red>That home does not exist.</red>");
         }
     }
 
@@ -104,9 +120,12 @@ public class CommandHandler {
         var homeName = (String) args.get("name");
         try {
             databaseHandler.createHome(player, homeName, player.getLocation());
-            player.sendMessage("§7Home §3" + homeName + "§7 created.");
+            player.sendRichMessage(
+                "<gray>Home <home-name> created.</gray>",
+                Placeholder.component("home-name", Component.text(homeName, NamedTextColor.DARK_AQUA))
+            );
         } catch (SQLException e) {
-            player.sendMessage("§cA home with that name already exists.");
+            player.sendRichMessage("<red>A home with that name already exists.</red>");
         }
     }
 
@@ -114,9 +133,14 @@ public class CommandHandler {
         try {
             var homes = databaseHandler.getHomes(player);
             var homeList = homes.isEmpty() ? "None" : String.join(", ", homes);
-            player.sendMessage("§7Your homes: §3" + homeList);
+            player.sendRichMessage("""
+                <gray>Your homes: <homes></gray>
+                """,
+                Placeholder.component("homes", Component.text(homeList, NamedTextColor.DARK_AQUA))
+            );
+
         } catch (SQLException e) {
-            player.sendMessage("§cAn error occurred while fetching your homes.");
+            player.sendRichMessage("<red>An error occurred while fetching your homes.</red>");
         }
     }
 
@@ -132,7 +156,7 @@ public class CommandHandler {
         try {
             Class.forName("io.papermc.paper.threadedregions.RegionizedServer");
             return true;
-        } catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException _) {
             return false;
         }
     }
@@ -140,7 +164,7 @@ public class CommandHandler {
     private String[] getHomesOfSender(CommandSender sender) {
         if (sender instanceof Player player) {
             try {
-                return databaseHandler.getHomes(player).toArray(new String[0]);
+                return databaseHandler.getHomes(player).toArray(String[]::new);
             } catch (SQLException e) {
                 return new String[0];
             }
