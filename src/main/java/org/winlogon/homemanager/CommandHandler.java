@@ -3,15 +3,22 @@ package org.winlogon.homemanager;
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.arguments.ArgumentSuggestions;
 import dev.jorel.commandapi.executors.CommandArguments;
+import dev.jorel.commandapi.arguments.StringArgument;
+import dev.jorel.commandapi.arguments.IntegerArgument;
+
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.JoinConfiguration;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
-import dev.jorel.commandapi.arguments.StringArgument;
+
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.sql.SQLException;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
 import java.util.Optional;
 
 public class CommandHandler {
@@ -83,13 +90,13 @@ public class CommandHandler {
                         List<Component> lines = new ArrayList<>();
                         lines.add(Component.text("Your temporary homes:", NamedTextColor.GRAY));
                         for (int id : ids) {
-                            TempHome tempHome = tempHomeManager.getTempHome(playerId, id);
+                            var tempHome = tempHomeManager.getTempHome(playerId, id);
                             if (tempHome == null) continue;
-                            String worldName = tempHome.getWorldName();
-                            double x = tempHome.getX();
-                            double y = tempHome.getY();
-                            double z = tempHome.getZ();
-                            Component line = Component.text()
+                            var worldName = tempHome.getWorldName();
+                            var x = tempHome.getX();
+                            var y = tempHome.getY();
+                            var z = tempHome.getZ();
+                            var line = Component.text()
                                 .append(Component.text("ID: ", NamedTextColor.GRAY))
                                 .append(Component.text(id, NamedTextColor.DARK_AQUA))
                                 .append(Component.text(" - ", NamedTextColor.GRAY))
@@ -104,7 +111,7 @@ public class CommandHandler {
                         player.sendMessage(message);
                     }))
                 .withSubcommand(new CommandAPICommand("finalize")
-                    .withArguments(new IntegerArgument("temp_house_id")
+                    .withArguments(new IntegerArgument("id")
                         .replaceSuggestions(ArgumentSuggestions.strings(info -> {
                             Player player = (Player) info.sender();
                             return tempHomeManager.getTempHomeIds(player.getUniqueId()).stream()
@@ -113,15 +120,15 @@ public class CommandHandler {
                         }))
                     .withArguments(new StringArgument("name"))
                     .executesPlayer((player, args) -> {
-                        int tempId = (int) args.get("temp_house_id");
-                        String name = (String) args.get("name");
-                        UUID playerId = player.getUniqueId();
-                        TempHome tempHome = tempHomeManager.getTempHome(playerId, tempId);
+                        var tempId = (int) args.get("temp_house_id");
+                        var name = (String) args.get("name");
+                        var playerId = player.getUniqueId();
+                        var tempHome = tempHomeManager.getTempHome(playerId, tempId);
                         if (tempHome == null) {
                             player.sendRichMessage("<red>Invalid temporary home ID or it has expired.</red>");
                             return;
                         }
-                        Location location = tempHome.getLocation();
+                        var location = tempHome.getLocation();
                         if (location == null || location.getWorld() == null) {
                             player.sendRichMessage("<red>The world for this temporary home is not loaded.</red>");
                             tempHomeManager.removeTempHome(playerId, tempId);
@@ -137,9 +144,7 @@ public class CommandHandler {
                             }
                             databaseHandler.createHome(player, name, location);
                             tempHomeManager.removeTempHome(playerId, tempId);
-                            player.sendRichMessage(
-                                "<gray>Temporary home <dark_aqua>" + tempId + "</dark_aqua> finalized as <dark_aqua>" + name + "</dark_aqua>.</gray>"
-                            );
+                            player.sendRichMessage(STR."<gray>Temporary home <dark_aqua>\{tempId}</dark_aqua> finalized as <dark_aqua>\{name}</dark_aqua>.</gray>");
                         } catch (SQLException e) {
                             player.sendRichMessage("<red>An error occurred while finalizing the temporary home.</red>");
                         }

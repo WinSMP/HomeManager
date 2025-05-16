@@ -22,21 +22,23 @@ public class TempHomeManager {
     }
 
     public int createTempHome(Player player) {
-        UUID uuid = player.getUniqueId();
-        int id = playerNextId.computeIfAbsent(uuid, k -> new AtomicInteger(0)).getAndIncrement();
+        var uuid = player.getUniqueId();
+        var id = playerNextId.computeIfAbsent(uuid, k -> new AtomicInteger(0)).getAndIncrement();
         Map<Integer, TempHome> homes = playerTempHomes.computeIfAbsent(uuid, k -> new ConcurrentHashMap<>());
         homes.put(id, new TempHome(player.getLocation()));
         return id;
     }
 
     public List<Integer> getTempHomeIds(UUID playerId) {
-        Map<Integer, TempHome> homes = playerTempHomes.get(playerId);
+        var homes = playerTempHomes.get(playerId);
         if (homes == null) return Collections.emptyList();
+
         long now = System.currentTimeMillis();
         List<Integer> validIds = new ArrayList<>();
-        Iterator<Map.Entry<Integer, TempHome>> iterator = homes.entrySet().iterator();
+
+        var iterator = homes.entrySet().iterator();
         while (iterator.hasNext()) {
-            Map.Entry<Integer, TempHome> entry = iterator.next();
+            var entry = iterator.next();
             if (entry.getValue().isExpired(now)) {
                 iterator.remove();
             } else {
@@ -47,10 +49,12 @@ public class TempHomeManager {
     }
 
     public TempHome getTempHome(UUID playerId, int id) {
-        Map<Integer, TempHome> homes = playerTempHomes.get(playerId);
+        var homes = playerTempHomes.get(playerId);
         if (homes == null) return null;
+
         TempHome tempHome = homes.get(id);
         if (tempHome == null) return null;
+
         long now = System.currentTimeMillis();
         if (tempHome.isExpired(now)) {
             homes.remove(id);
@@ -60,7 +64,7 @@ public class TempHomeManager {
     }
 
     public boolean removeTempHome(UUID playerId, int id) {
-        Map<Integer, TempHome> homes = playerTempHomes.get(playerId);
+        var homes = playerTempHomes.get(playerId);
         return homes != null && homes.remove(id) != null;
     }
 
