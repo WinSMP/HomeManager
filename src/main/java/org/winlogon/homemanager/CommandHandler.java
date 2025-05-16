@@ -16,9 +16,13 @@ import java.util.Optional;
 
 public class CommandHandler {
     private DatabaseHandler databaseHandler;
+    private TempHomeManager tempHomeManager;
+    private boolean isFolia;
 
-    public CommandHandler(DatabaseHandler databaseHandler) {
+    public CommandHandler(DatabaseHandler databaseHandler, TempHomeManager tempHomeManager, final boolean isFolia) {
         this.databaseHandler = databaseHandler;
+        this.tempHomeManager = tempHomeManager;
+        this.isFolia = isFolia;
     }
     
     public void registerCommands() {
@@ -59,8 +63,90 @@ public class CommandHandler {
                     teleportHome(args, player);
                 })
             )
+            .withSubcommand(new CommandAPICommand("temp")
+                .withShortDescription("Manage temporary homes")
+                .withSubcommand(new CommandAPICommand("create")
+                    .executesPlayer((player, args) -> {
+                        int id = tempHomeManager.createTempHome(player);
+                        player.sendRichMessage(
+                            "<gray>Temporary home created with ID <dark_aqua>" + id + "</dark_aqua>.</gray>"
+                        );
+                    }))
+                .withSubcommand(new CommandAPICommand("list")
+                    .executesPlayer((player, args) -> {
+                        var playerId = player.getUniqueId();
+                        var ids = tempHomeManager.getTempHomeIds(playerId);
+                        if (ids.isEmpty()) {
+                            player.sendRichMessage("<red>You have no temporary homes.</red>");
+                            return;
+                        }
+                        List<Component> lines = new ArrayList<>();
+                        lines.add(Component.text("Your temporary homes:", NamedTextColor.GRAY));
+                        for (int id : ids) {
+                            TempHome tempHome = tempHomeManager.getTempHome(playerId, id);
+                            if (tempHome == null) continue;
+                            String worldName = tempHome.getWorldName();
+                            double x = tempHome.getX();
+                            double y = tempHome.getY();
+                            double z = tempHome.getZ();
+                            Component line = Component.text()
+                                .append(Component.text("ID: ", NamedTextColor.GRAY))
+                                .append(Component.text(id, NamedTextColor.DARK_AQUA))
+                                .append(Component.text(" - ", NamedTextColor.GRAY))
+                                .append(Component.text(
+                                    String.format("%s, %.1f, %.1f, %.1f", worldName, x, y, z),
+                                    NamedTextColor.WHITE
+                                ))
+                                .build();
+                            lines.add(line);
+                        }
+                        Component message = Component.join(JoinConfiguration.newlines(), lines);
+                        player.sendMessage(message);
+                    }))
+                .withSubcommand(new CommandAPICommand("finalize")
+                    .withArguments(new IntegerArgument("temp_house_id")
+                        .replaceSuggestions(ArgumentSuggestions.strings(info -> {
+                            Player player = (Player) info.sender();
+                            return tempHomeManager.getTempHomeIds(player.getUniqueId()).stream()
+                                .map(String::valueOf)
+                                .toArray(String[]::new);
+                        }))
+                    .withArguments(new StringArgument("name"))
+                    .executesPlayer((player, args) -> {
+                        int tempId = (int) args.get("temp_house_id");
+                        String name = (String) args.get("name");
+                        UUID playerId = player.getUniqueId();
+                        TempHome tempHome = tempHomeManager.getTempHome(playerId, tempId);
+                        if (tempHome == null) {
+                            player.sendRichMessage("<red>Invalid temporary home ID or it has expired.</red>");
+                            return;
+                        }
+                        Location location = tempHome.getLocation();
+                        if (location == null || location.getWorld() == null) {
+                            player.sendRichMessage("<red>The world for this temporary home is not loaded.</red>");
+                            tempHomeManager.removeTempHome(playerId, tempId);
+                            return;
+                        }
+                        try {
+                            if (databaseHandler.getHomeLocation(player, name) != null) {
+                                player.sendRichMessage(
+                                    "<red>A home with that name already exists.</red>",
+                                    Placeholder.component("home-name", Component.text(name, NamedTextColor.DARK_AQUA))
+                                );
+                                return;
+                            }
+                            databaseHandler.createHome(player, name, location);
+                            tempHomeManager.removeTempHome(playerId, tempId);
+                            player.sendRichMessage(
+                                "<gray>Temporary home <dark_aqua>" + tempId + "</dark_aqua> finalized as <dark_aqua>" + name + "</dark_aqua>.</gray>"
+                            );
+                        } catch (SQLException e) {
+                            player.sendRichMessage("<red>An error occurred while finalizing the temporary home.</red>");
+                        }
+                    }))
+            )
             .register();
-    }
+        }
 
     private void setHome(CommandArguments args, Player player) {
         var homeName = (String) args.get("home-name");
@@ -145,19 +231,10 @@ public class CommandHandler {
     }
 
     private void teleportPlayer(Player player, Location location) {
-        if (isFolia()) {
+        if (this.isFolia) {
             player.teleportAsync(location);
         } else {
             player.teleport(location);
-        }
-    }
-
-    private boolean isFolia() {
-        try {
-            Class.forName("io.papermc.paper.threadedregions.RegionizedServer");
-            return true;
-        } catch (ClassNotFoundException _) {
-            return false;
         }
     }
 
