@@ -107,17 +107,18 @@ public class CommandHandler {
                                 .build();
                             lines.add(line);
                         }
-                        Component message = Component.join(JoinConfiguration.newlines(), lines);
+                        var message = Component.join(JoinConfiguration.newlines(), lines);
                         player.sendMessage(message);
                     }))
                 .withSubcommand(new CommandAPICommand("finalize")
-                    .withArguments(new IntegerArgument("id")
-                        .replaceSuggestions(ArgumentSuggestions.strings(info -> {
-                            Player player = (Player) info.sender();
-                            return tempHomeManager.getTempHomeIds(player.getUniqueId()).stream()
-                                .map(String::valueOf)
-                                .toArray(String[]::new);
-                        }))
+                        .withArguments(new IntegerArgument("id")
+                            .replaceSuggestions(ArgumentSuggestions.strings(info -> {
+                                var player = (Player) info.sender();
+                                return tempHomeManager.getTempHomeIds(player.getUniqueId())
+                                    .stream()
+                                    .map(String::valueOf)
+                                    .toArray(String[]::new);
+                            })))
                     .withArguments(new StringArgument("name"))
                     .executesPlayer((player, args) -> {
                         var tempId = (int) args.get("temp_house_id");
