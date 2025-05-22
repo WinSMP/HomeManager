@@ -6,14 +6,15 @@ import org.bukkit.entity.Player;
 
 import java.io.File;
 import java.sql.*;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Optional;
 
-public class DatabaseHandler {
+public class SQLiteHandler implements DataHandler {
 
     private Connection connection;
 
-    public DatabaseHandler(File dataFolder) {
+    public SQLiteHandler(File dataFolder) {
         setupDatabase(dataFolder);
     }
 
@@ -45,7 +46,8 @@ public class DatabaseHandler {
      * @param homeName The name of the home
      * @param location The new location of the home
      */
-    public void updateHome(Player player, String homeName, Location location) throws SQLException {
+    @Override
+    public boolean updateHome(Player player, String homeName, Location location) {
         try (PreparedStatement stmt = connection.prepareStatement(
                 "UPDATE homes SET world_name = ?, x = ?, y = ?, z = ? WHERE player_uuid = ? AND home_name = ?")) {
             stmt.setString(1, location.getWorld().getName());
@@ -55,9 +57,9 @@ public class DatabaseHandler {
             stmt.setString(5, player.getUniqueId().toString());
             stmt.setString(6, homeName);
             int rowsUpdated = stmt.executeUpdate();
-            if (rowsUpdated == 0) {
-                throw new SQLException("Home does not exist");
-            }
+            return rowsUpdated != 0;
+        } catch (Exception e) {
+            return false;
         }
     }
 
@@ -69,7 +71,8 @@ public class DatabaseHandler {
      * @param location The location of the home
      * @throws SQLException If the home already exists
      */
-    public void createHome(Player player, String homeName, Location location) throws SQLException {
+    @Override
+    public Optional<Boolean> createHome(Player player, String homeName, Location location) {
         try (PreparedStatement stmt = connection.prepareStatement(
                 "INSERT INTO homes (player_uuid, home_name, world_name, x, y, z) VALUES (?, ?, ?, ?, ?, ?)")) {
             stmt.setString(1, player.getUniqueId().toString());
@@ -81,11 +84,12 @@ public class DatabaseHandler {
             stmt.executeUpdate();
         } catch (SQLException e) {
             if (e.getErrorCode() == 19) { // SQLite constraint violation (primary key)
-                throw new SQLException("Home already exists");
+                return Optional.of(false);
             } else {
-                throw e;
+                return Optional.empty();
             }
         }
+        return Optional.of(true);
     }
 
     /**
@@ -96,8 +100,8 @@ public class DatabaseHandler {
      * @return The location of the home
      * @throws SQLException If the home does not exist
      */
-    public Location getHomeLocation(Player player, String homeName) throws SQLException {
-        Location location = null;
+    public Optional<Location> getHomeLocation(Player player, String homeName) {
+        Optional<Location> location = Optional.empty();
         try (PreparedStatement stmt = connection.prepareStatement(
                 "SELECT world_name, x, y, z FROM homes WHERE player_uuid = ? AND home_name = ?")) {
             stmt.setString(1, player.getUniqueId().toString());
@@ -109,9 +113,11 @@ public class DatabaseHandler {
                     var y = rs.getDouble("y");
                     var z = rs.getDouble("z");
 
-                    location = new Location(Bukkit.getWorld(worldName), x, y, z);
+                    location = Optional.of(new Location(Bukkit.getWorld(worldName), x, y, z));
                 }
             }
+        } catch (Exception e) {
+            return location;
         }
         return location;
     }
@@ -123,7 +129,7 @@ public class DatabaseHandler {
      * @return A list of home names
      * @throws SQLException If there is a database error
      */
-    public List<String> getHomes(Player player) throws SQLException {
+    public List<String> getHomes(Player player) {
         List<String> homes = new ArrayList<>();
         try (PreparedStatement stmt = connection.prepareStatement(
                 "SELECT home_name FROM homes WHERE player_uuid = ?")) {
@@ -132,7 +138,11 @@ public class DatabaseHandler {
                 while (rs.next()) {
                     homes.add(rs.getString("home_name"));
                 }
+            } catch (Exception e) {
+                return homes;
             }
+        } catch (Exception e) {
+            return homes;
         }
         return homes;
     }
@@ -144,13 +154,17 @@ public class DatabaseHandler {
      * @param homeName The name of the home
      * @throws SQLException If the home does not exist
      */
-    public void deleteHome(Player player, String homeName) throws SQLException {
+    @Override
+    public boolean deleteHome(Player player, String homeName) {
         try (PreparedStatement stmt = connection.prepareStatement(
                 "DELETE FROM homes WHERE player_uuid = ? AND home_name = ?")) {
             stmt.setString(1, player.getUniqueId().toString());
             stmt.setString(2, homeName);
             stmt.executeUpdate();
+        } catch (SQLException e) {
+            return false;
         }
+        return true;
     }
 
     /**

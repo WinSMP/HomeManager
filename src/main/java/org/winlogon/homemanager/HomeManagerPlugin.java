@@ -3,12 +3,12 @@ package org.winlogon.homemanager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class HomeManagerPlugin extends JavaPlugin {
-    private DatabaseHandler databaseHandler;
+    private SQLiteHandler databaseHandler;
 
     @Override
     public void onEnable() {
         saveDefaultConfig();
-        databaseHandler = new DatabaseHandler(getDataFolder());
+        databaseHandler = new SQLiteHandler(getDataFolder());
         var commandHandler = new CommandHandler(databaseHandler);
         commandHandler.registerCommands();
     }

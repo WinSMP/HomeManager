@@ -15,9 +15,9 @@ import java.sql.SQLException;
 import java.util.Optional;
 
 public class CommandHandler {
-    private DatabaseHandler databaseHandler;
+    private SQLiteHandler databaseHandler;
 
-    public CommandHandler(DatabaseHandler databaseHandler) {
+    public CommandHandler(SQLiteHandler databaseHandler) {
         this.databaseHandler = databaseHandler;
     }
     
@@ -64,21 +64,18 @@ public class CommandHandler {
 
     private void setHome(CommandArguments args, Player player) {
         var homeName = (String) args.get("home-name");
-        try {
-            if (databaseHandler.getHomeLocation(player, homeName) == null) {
-                player.sendRichMessage(
-                    "<red>Home <home-name> does not exist.</red>", 
-                    Placeholder.component("home-name", Component.text(homeName, NamedTextColor.DARK_AQUA))
-                );
-            } else {
-                databaseHandler.updateHome(player, homeName, player.getLocation());
-                player.sendRichMessage(
-                    "<gray>Home <home-name> updated!</gray>",
-                    Placeholder.component("home-name", Component.text(homeName, NamedTextColor.DARK_AQUA))
-                );
-            }
-        } catch (SQLException e) {
-            player.sendRichMessage("<red>An error occurred while updating your home.</red>");
+        var homeLocation = Optional.ofNullable(databaseHandler.getHomeLocation(player, homeName));
+        if (homeLocation.isEmpty()) {
+            player.sendRichMessage(
+                "<red>Home <home-name> does not exist.</red>", 
+                Placeholder.component("home-name", Component.text(homeName.get(), NamedTextColor.DARK_AQUA))
+            );
+        } else {
+            databaseHandler.updateHome(player, homeName, player.getLocation());
+            player.sendRichMessage(
+                "<gray>Home <home-name> updated!</gray>",
+                Placeholder.component("home-name", Component.text(homeName, NamedTextColor.DARK_AQUA))
+            );
         }
     }
 
