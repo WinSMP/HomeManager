@@ -13,6 +13,14 @@ public class HomeManagerPlugin extends JavaPlugin {
     public void onEnable() {
         saveDefaultConfig();
 
+        // load postgresql jdbc driver
+        try {
+            Class.forName("org.postgresql.Driver");
+        } catch (ClassNotFoundException _) {
+            throw new RuntimeException("PostgreSQL JDBC Driver not found.");
+        }
+
+
         var config = getConfig();
         var logger = getLogger();
         var postgresEnabled = config.getBoolean("postgres.enabled", false);

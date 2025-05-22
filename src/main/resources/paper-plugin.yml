@@ -2,6 +2,7 @@ name: "${NAME}"
 main: "${PACKAGE}.HomeManagerPlugin"
 version: "${VERSION}"
 api-version: "${MCVERSION}"
+loader: "${PACKAGE}.HomeManagerLoader"
 author: ["winlogon"]
 description: "${DESCRIPTION}"
 folia-supported: true

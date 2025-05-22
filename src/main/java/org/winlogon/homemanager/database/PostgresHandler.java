@@ -20,12 +20,6 @@ public class PostgresHandler implements DataHandler {
     private Connection connection;
 
     public PostgresHandler(AdvancedDatabaseConfig config, Logger logger) {
-        try {
-            Class.forName("org.postgresql.Driver");
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException("PostgreSQL JDBC Driver not found. Add org.postgresql:postgresql to your plugin dependencies.", e);
-        }
-
         var jdbcUrl = STR."jdbc:postgresql://\{config.host()}:\{config.port()}/\{config.database()}";
         try {
             this.connection = DriverManager.getConnection(jdbcUrl, config.user(), config.password());
