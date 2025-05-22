@@ -13,31 +13,22 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Logger;
 
 public class PostgresHandler implements DataHandler {
 
     private Connection connection;
 
-    /**
-     * Constructs a new PostgresHandler. Connects to PostgreSQL using the given parameters,
-     * and ensures the "homes" table exists (very similar schema to SQLite version).
-     *
-     * @param host     the database host (e.g. "localhost")
-     * @param port     the database port (e.g. 5432)
-     * @param database the database name (e.g. "minecraft")
-     * @param user     the database user
-     * @param password the database password
-     */
-    public PostgresHandler(String host, int port, String database, String user, String password) {
+    public PostgresHandler(AdvancedDatabaseConfig config, Logger logger) {
         try {
             Class.forName("org.postgresql.Driver");
         } catch (ClassNotFoundException e) {
             throw new RuntimeException("PostgreSQL JDBC Driver not found. Add org.postgresql:postgresql to your plugin dependencies.", e);
         }
 
-        String jdbcUrl = STR."jdbc:postgresql://\{host}:\{port}/\{database}";
+        var jdbcUrl = STR."jdbc:postgresql://\{config.host()}:\{config.port()}/\{config.database()}";
         try {
-            this.connection = DriverManager.getConnection(jdbcUrl, user, password);
+            this.connection = DriverManager.getConnection(jdbcUrl, config.user(), config.password());
         } catch (SQLException e) {
             e.printStackTrace();
             throw new RuntimeException("Failed to connect to PostgreSQL at " + jdbcUrl, e);
