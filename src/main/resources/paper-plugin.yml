@@ -1,9 +1,9 @@
-name: ${NAME}
-main: ${PACKAGE}.HomeManagerPlugin
-version: ${VERSION}
-api-version: ${MCVERSION}
-author: winlogon
-description: ${DESCRIPTION}
+name: "${NAME}"
+main: "${PACKAGE}.HomeManagerPlugin"
+version: "${VERSION}"
+api-version: "${MCVERSION}"
+author: ["winlogon"]
+description: "${DESCRIPTION}"
 folia-supported: true
 dependencies:
   server:

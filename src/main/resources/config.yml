@@ -1,0 +1,13 @@
+# HomeManager configuration file
+
+# Use PostgreSQL database
+postgres:
+  # Set to true to use PostgreSQL, or else use SQLite
+  enabled: false
+  # Other PostgreSQL settings
+  host: "localhost"
+  port: 5432
+  database: "home_manager"
+  username: "postgres"
+  # CHANGE THIS
+  password: ""
