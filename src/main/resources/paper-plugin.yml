@@ -3,7 +3,7 @@ main: "${PACKAGE}.HomeManagerPlugin"
 version: "${VERSION}"
 api-version: "${MCVERSION}"
 loader: "${PACKAGE}.HomeManagerLoader"
-author: ["winlogon"]
+authors: ["winlogon"]
 description: "${DESCRIPTION}"
 folia-supported: true
 dependencies:

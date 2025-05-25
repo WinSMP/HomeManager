@@ -7,7 +7,7 @@ import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.graph.Dependency;
 import org.eclipse.aether.repository.RemoteRepository;
 
-class HomeManagerLoader implements PluginLoader {
+public class HomeManagerLoader implements PluginLoader {
     @Override 
     public void classloader(PluginClasspathBuilder classpathBuilder) {
         var resolver = new MavenLibraryResolver();
