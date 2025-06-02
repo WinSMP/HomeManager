@@ -76,7 +76,7 @@ dependencies {
     compileOnly("dev.jorel:commandapi-bukkit-core:10.0.1")
 
     compileOnly("com.github.walker84837:JResult:1.3.0")
-    compileOnly("org.postgresql:postgresql:42.7.5")
+    compileOnly("org.postgresql:postgresql:42.7.6")
 
     testImplementation("io.papermc.paper:paper-api:1.21.5-R0.1-SNAPSHOT")
     testImplementation("org.junit.jupiter:junit-jupiter:5.12.2")
