@@ -79,7 +79,7 @@ dependencies {
     compileOnly("org.postgresql:postgresql:42.7.7")
 
     testImplementation("io.papermc.paper:paper-api:1.21.5-R0.1-SNAPSHOT")
-    testImplementation("org.junit.jupiter:junit-jupiter:5.12.2")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.13.1")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.12.2")
 }
 
