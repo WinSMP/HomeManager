@@ -3,7 +3,7 @@ import java.util.Date
 import java.util.TimeZone
 
 plugins {
-    id("com.gradleup.shadow") version "8.3.6"
+    id("com.gradleup.shadow") version "8.3.7"
     java
 }
 
@@ -80,7 +80,7 @@ dependencies {
 
     testImplementation("io.papermc.paper:paper-api:1.21.6-R0.1-SNAPSHOT")
     testImplementation("org.junit.jupiter:junit-jupiter:5.13.2")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.13.1")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.13.2")
 }
 
 tasks.test {
