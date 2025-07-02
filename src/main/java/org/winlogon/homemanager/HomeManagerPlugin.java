@@ -53,7 +53,7 @@ public class HomeManagerPlugin extends JavaPlugin {
             config.getString("postgres.host", "localhost"),
             config.getInt("postgres.port", 5432),
             config.getString("postgres.database", "minecraft"),
-            config.getString("postgres.user", "postgres"),
+            config.getString("postgres.username", "postgres"),
             config.getString("postgres.password", "")
         );
     
