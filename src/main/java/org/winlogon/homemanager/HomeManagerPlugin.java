@@ -4,7 +4,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.postgresql.ds.PGSimpleDataSource;
 import org.sqlite.SQLiteDataSource;
-import org.winlogon.homemanager.database.DatabaseManager;
+import org.winlogon.homemanager.database.QueryRunner;
 import org.winlogon.homemanager.database.PostgresHandler;
 import org.winlogon.homemanager.database.SQLiteHandler;
 
@@ -15,7 +15,7 @@ import java.util.logging.Logger;
 
 public class HomeManagerPlugin extends JavaPlugin {
     private DataHandler databaseHandler;
-    private DatabaseManager databaseManager;
+    private QueryRunner queryRunner;
     private FileConfiguration config;
     private Logger logger;
 
@@ -28,15 +28,15 @@ public class HomeManagerPlugin extends JavaPlugin {
         try {
             DataSource dataSource = setupDataSource();
             int poolSize = config.getInt("database.pool-size", 10);
-            this.databaseManager = new DatabaseManager(this, dataSource, poolSize);
+            this.queryRunner = new QueryRunner(this, dataSource, poolSize);
             logger.info("DatabaseManager initialized successfully.");
 
             boolean isPostgres = config.getBoolean("postgres.enabled", false);
             if (isPostgres) {
-                databaseHandler = new PostgresHandler(databaseManager, logger);
+                databaseHandler = new PostgresHandler(queryRunner, logger);
                 logger.info("Using PostgreSQL for home storage.");
             } else {
-                databaseHandler = new SQLiteHandler(databaseManager, logger);
+                databaseHandler = new SQLiteHandler(queryRunner, logger);
                 logger.info("Using SQLite for home storage.");
             }
 
@@ -46,14 +46,14 @@ public class HomeManagerPlugin extends JavaPlugin {
             return;
         }
 
-        var commandHandler = new CommandHandler<DataHandler>(databaseHandler);
+        var commandHandler = new CommandHandler<DataHandler>(queryRunner);
         commandHandler.registerCommands();
     }
 
     @Override
     public void onDisable() {
-        if (databaseManager != null) {
-            databaseManager.shutdown();
+        if (queryRunner != null) {
+            queryRunner.shutdown();
         }
     }
 

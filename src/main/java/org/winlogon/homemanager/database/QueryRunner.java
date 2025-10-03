@@ -10,17 +10,16 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 import java.util.logging.Level;
 
-public final class DatabaseManager {
+public final class QueryRunner {
     private final JavaPlugin plugin;
     private final DataSource dataSource;
     private final ExecutorService executor;
     private final BlockingQueue<Connection> connectionPool;
     private final int poolSize;
 
-    public DatabaseManager(JavaPlugin plugin, DataSource dataSource, int poolSize) throws SQLException {
+    public QueryRunner(JavaPlugin plugin, DataSource dataSource, int poolSize) throws SQLException {
         this.plugin = plugin;
         this.dataSource = dataSource;
         this.poolSize = poolSize;

@@ -7,10 +7,7 @@ import org.bukkit.entity.Player;
 import org.winlogon.homemanager.DataHandler;
 import org.winlogon.homemanager.DatabaseError;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -19,10 +16,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class PostgresHandler implements DataHandler {
-    private final DatabaseManager dbManager;
+    private final QueryRunner dbManager;
     private final Logger logger;
 
-    public PostgresHandler(DatabaseManager dbManager, Logger logger) {
+    public PostgresHandler(QueryRunner dbManager, Logger logger) {
         this.dbManager = dbManager;
         this.logger = logger;
         init();
