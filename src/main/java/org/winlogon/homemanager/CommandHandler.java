@@ -6,145 +6,141 @@ import dev.jorel.commandapi.arguments.StringArgument;
 import dev.jorel.commandapi.executors.CommandArguments;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.JoinConfiguration;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.java.JavaPlugin;
 
-import java.sql.SQLException;
-import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 public class CommandHandler<Handler extends DataHandler> {
-    private Handler databaseHandler;
+    private final Handler databaseHandler;
+    private final JavaPlugin plugin;
+    private final MiniMessage miniMessage = MiniMessage.miniMessage();
 
-    public CommandHandler(Handler databaseHandler) {
+    public CommandHandler(Handler databaseHandler, JavaPlugin plugin) {
         this.databaseHandler = databaseHandler;
+        this.plugin = plugin;
     }
-    
+
     public void registerCommands() {
         new CommandAPICommand("home")
             .withShortDescription("Manage your homes")
             .withSubcommand(new CommandAPICommand("create")
                 .withArguments(new StringArgument("name"))
-                .executesPlayer((player, args) -> {
-                    createHome(args, player);
-                })
-            )
+                .executesPlayer(this::createHome))
             .withSubcommand(new CommandAPICommand("list")
-                .executesPlayer((player, args) -> {
-                    listHomes(args, player);
-                })
-            )
+                .executesPlayer(this::listHomes))
             .withSubcommand(new CommandAPICommand("delete")
-                .withArguments(new StringArgument("home-name").replaceSuggestions(ArgumentSuggestions.strings((info) -> {
-                    return getHomesOfSender(info.sender());
-                })))
-                .executesPlayer((player, args) -> {
-                    deleteHome(args, player);
-                })
-            )
+                .withArguments(new StringArgument("home-name").replaceSuggestions(ArgumentSuggestions.stringsAsync(this::getHomes)))
+                .executesPlayer(this::deleteHome))
             .withSubcommand(new CommandAPICommand("set")
-                .withArguments(new StringArgument("home-name").replaceSuggestions(ArgumentSuggestions.strings((info) -> {
-                    return getHomesOfSender(info.sender());
-                })))
-                .executesPlayer((player, args) -> {
-                    setHome(args, player);
-                })
-            )
+                .withArguments(new StringArgument("home-name").replaceSuggestions(ArgumentSuggestions.stringsAsync(this::getHomes)))
+                .executesPlayer(this::setHome))
             .withSubcommand(new CommandAPICommand("teleport")
-                .withArguments(new StringArgument("home-name").replaceSuggestions(ArgumentSuggestions.strings((info) -> {
-                    return getHomesOfSender(info.sender());
-                })))
-                .executesPlayer((player, args) -> {
-                    teleportHome(args, player);
-                })
-            )
+                .withArguments(new StringArgument("home-name").replaceSuggestions(ArgumentSuggestions.stringsAsync(this::getHomes)))
+                .executesPlayer(this::teleportHome))
             .register();
     }
 
-    private void setHome(CommandArguments args, Player player) {
+    private void setHome(Player player, CommandArguments args) {
         var homeName = (String) args.get("home-name");
-        var homeLocation = Optional.ofNullable(databaseHandler.getHomeLocation(player, homeName));
-        if (homeLocation.isEmpty()) {
-            player.sendRichMessage(
-                "<red>Home <home-name> does not exist.</red>", 
-                Placeholder.component("home-name", Component.text(homeName, NamedTextColor.DARK_AQUA))
+        databaseHandler.updateHome(player, homeName, player.getLocation()).thenAccept(result -> {
+            result.match(
+                ok -> player.sendRichMessage(
+                    "<gray>Home <home-name> updated!</gray>",
+                    Placeholder.component("home-name", Component.text(homeName, NamedTextColor.DARK_AQUA))
+                ),
+                err -> player.sendRichMessage(
+                    "<red>Home <home-name> does not exist.</red>",
+                    Placeholder.component("home-name", Component.text(homeName, NamedTextColor.DARK_AQUA))
+                )
             );
-        } else {
-            databaseHandler.updateHome(player, homeName, player.getLocation());
-            player.sendRichMessage(
-                "<gray>Home <home-name> updated!</gray>",
-                Placeholder.component("home-name", Component.text(homeName, NamedTextColor.DARK_AQUA))
-            );
-        }
+        });
     }
 
-    private void teleportHome(CommandArguments args, Player player) {
-        var homeName = (String) args.get("home-name");
-        var homeLocation = databaseHandler.getHomeLocation(player, homeName);
-        if (homeLocation.isPresent()) {
-            teleportPlayer(player, homeLocation.get());
-            player.sendRichMessage(
-                "<gray>Teleported to home: <home-name></gray>",
-                Placeholder.component("home-name", Component.text(homeName, NamedTextColor.DARK_AQUA))
-            );
-        } else {
-            player.sendRichMessage(
-                "<red>Home <home-name> does not exist.</red>",
-                Placeholder.component("home-name", Component.text(homeName, NamedTextColor.DARK_AQUA))
-            );
-        }
-    }
-
-    private void deleteHome(CommandArguments args, Player player) {
-        var homeName = (String) args.get("home-name");
-        var result = databaseHandler.deleteHome(player, homeName);
-        var r = result.fold(
-            ok -> {
+    private void teleportHome(Player player, CommandArguments args) {
+        String homeName = (String) args.get("home-name");
+        databaseHandler.getHomeLocation(player, homeName).thenAccept(homeLocationOpt -> {
+            if (homeLocationOpt.isPresent()) {
+                teleportPlayer(player, homeLocationOpt.get());
                 player.sendRichMessage(
-                    "<red>Home <home-name> deleted.</red>",
+                    "<gray>Teleported to home: <home-name></gray>",
                     Placeholder.component("home-name", Component.text(homeName, NamedTextColor.DARK_AQUA))
                 );
-                return null;
-            },
-            err -> {
-                player.sendRichMessage("<red>That home does not exist.</red>");
-                return null;
+            } else {
+                player.sendRichMessage(
+                    "<red>Home <home-name> does not exist.</red>",
+                    Placeholder.component("home-name", Component.text(homeName, NamedTextColor.DARK_AQUA))
+                );
             }
-        );
+        });
     }
 
-    private void createHome(CommandArguments args, Player player) {
+    private void deleteHome(Player player, CommandArguments args) {
+        var homeName = (String) args.get("home-name");
+        databaseHandler.deleteHome(player, homeName).thenAccept(result -> {
+            result.match(
+                ok -> player.sendRichMessage(
+                    "<red>Home <home-name> deleted.</red>",
+                    Placeholder.component("home-name", Component.text(homeName, NamedTextColor.DARK_AQUA))
+                ),
+                err -> player.sendRichMessage("<red>That home does not exist.</red>")
+            );
+        });
+    }
+
+    private void createHome(Player player, CommandArguments args) {
         var homeName = (String) args.get("name");
-        var result = databaseHandler.createHome(player, homeName, player.getLocation());
-        if (result.isEmpty()) player.sendRichMessage("<red>A home with that name already exists.</red>");
-        player.sendRichMessage(
-            "<gray>Home <home-name> created.</gray>",
-            Placeholder.component(
-                "home-name",
-                Component.text(homeName, NamedTextColor.DARK_AQUA)
-            )
-        );
-        
+        databaseHandler.createHome(player, homeName, player.getLocation()).thenAccept(resultOpt -> {
+            resultOpt.ifPresentOrElse(
+                created -> {
+                    if (created) {
+                        player.sendRichMessage("<gray>Home <home-name> created.</gray>", Placeholder.component("home-name", Component.text(homeName, NamedTextColor.DARK_AQUA)));
+                    } else {
+                        player.sendRichMessage("<red>A home with that name already exists.</red>");
+                    }
+                },
+                () -> player.sendRichMessage("<red>An error occurred while creating your home.</red>")
+            );
+        });
     }
 
-    private void listHomes(CommandArguments args, Player player) {
-        var homes = databaseHandler.getHomes(player);
-        var homeList = homes.isEmpty() ? "None" : String.join(", ", homes);
-        player.sendRichMessage("""
-            <gray>Your homes: <homes></gray>
-            """,
-            Placeholder.component("homes", Component.text(homeList, NamedTextColor.DARK_AQUA))
-        );
+    private CompletableFuture<String[]> getHomes(SuggestionsInfo info) {
+        if (info.sender() instanceof Player player) {
+            return databaseHandler.getHomes(player).thenApply(list -> list.toArray(new String[0]));
+        }
+        return CompletableFuture.completedFuture(new String[0]);
+    }
+
+    private void listHomes(Player player, CommandArguments args) {
+        databaseHandler.getHomes(player).thenAccept(homes -> {
+            Component homeListComponent = homes.isEmpty()
+                ? Component.text("None", NamedTextColor.GRAY)
+                : Component.join(
+                    JoinConfiguration.separator(Component.text(", ", NamedTextColor.GRAY)),
+                    homes.stream()
+                        .map(home -> Component.text(home, NamedTextColor.DARK_AQUA))
+                        .toArray(Component[]::new)
+                );
+
+            player.sendMessage(
+                Component.text("Your homes: ", NamedTextColor.GRAY)
+                    .append(homeListComponent)
+            );
+        });
     }
 
     private void teleportPlayer(Player player, Location location) {
         if (isFolia()) {
             player.teleportAsync(location);
         } else {
-            player.teleport(location);
+            plugin.getServer().getScheduler().runTask(plugin, () -> player.teleport(location));
         }
     }
 
@@ -152,15 +148,8 @@ public class CommandHandler<Handler extends DataHandler> {
         try {
             Class.forName("io.papermc.paper.threadedregions.RegionizedServer");
             return true;
-        } catch (ClassNotFoundException _) {
+        } catch (ClassNotFoundException e) {
             return false;
         }
-    }
-
-    private String[] getHomesOfSender(CommandSender sender) {
-        if (sender instanceof Player player) {
-            return databaseHandler.getHomes(player).toArray(String[]::new);
-        }
-        return new String[0];
     }
 }

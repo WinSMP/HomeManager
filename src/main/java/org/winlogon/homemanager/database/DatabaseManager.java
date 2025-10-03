@@ -14,7 +14,6 @@ import java.util.function.Consumer;
 import java.util.logging.Level;
 
 public final class DatabaseManager {
-
     private final JavaPlugin plugin;
     private final DataSource dataSource;
     private final ExecutorService executor;
@@ -42,7 +41,7 @@ public final class DatabaseManager {
     }
 
     private Connection getConnection() throws SQLException, InterruptedException {
-        Connection connection = connectionPool.take();
+        var connection = connectionPool.take();
         try {
             if (!connection.isValid(1)) {
                 plugin.getLogger().warning("Stale database connection detected. Reconnecting...");
@@ -107,7 +106,7 @@ public final class DatabaseManager {
             Thread.currentThread().interrupt();
         }
 
-        for (Connection connection : connectionPool) {
+        for (var connection : connectionPool) {
             closeConnection(connection);
         }
         connectionPool.clear();

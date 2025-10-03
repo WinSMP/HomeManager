@@ -19,7 +19,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class PostgresHandler implements DataHandler {
-
     private final DatabaseManager dbManager;
     private final Logger logger;
 
@@ -42,7 +41,7 @@ public class PostgresHandler implements DataHandler {
             );
             """;
         dbManager.execute(connection -> {
-            try (Statement stmt = connection.createStatement()) {
+            try (var stmt = connection.createStatement()) {
                 stmt.executeUpdate(createTableSql);
             } catch (SQLException e) {
                 logger.log(Level.SEVERE, "Failed to create or verify 'homes' table in PostgreSQL", e);
@@ -53,9 +52,9 @@ public class PostgresHandler implements DataHandler {
     @Override
     public CompletableFuture<Result<Void, DatabaseError>> updateHome(Player player, String homeName, Location location) {
         CompletableFuture<Result<Void, DatabaseError>> future = new CompletableFuture<>();
-        String sql = "UPDATE homes SET world_name = ?, x = ?, y = ?, z = ? WHERE player_uuid = ? AND home_name = ?";
+        var sql = "UPDATE homes SET world_name = ?, x = ?, y = ?, z = ? WHERE player_uuid = ? AND home_name = ?";
         dbManager.execute(connection -> {
-            try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            try (var stmt = connection.prepareStatement(sql)) {
                 stmt.setString(1, location.getWorld().getName());
                 stmt.setDouble(2, location.getX());
                 stmt.setDouble(3, location.getY());
@@ -81,7 +80,7 @@ public class PostgresHandler implements DataHandler {
         CompletableFuture<Result<Void, DatabaseError>> future = new CompletableFuture<>();
         String sql = "DELETE FROM homes WHERE player_uuid = ? AND home_name = ?";
         dbManager.execute(connection -> {
-            try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            try (var stmt = connection.prepareStatement(sql)) {
                 stmt.setString(1, player.getUniqueId().toString());
                 stmt.setString(2, homeName);
                 int rowsDeleted = stmt.executeUpdate();
@@ -103,7 +102,7 @@ public class PostgresHandler implements DataHandler {
         CompletableFuture<Optional<Boolean>> future = new CompletableFuture<>();
         String sql = "INSERT INTO homes (player_uuid, home_name, world_name, x, y, z) VALUES (?, ?, ?, ?, ?, ?)";
         dbManager.execute(connection -> {
-            try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            try (var stmt = connection.prepareStatement(sql)) {
                 stmt.setString(1, player.getUniqueId().toString());
                 stmt.setString(2, homeName);
                 stmt.setString(3, location.getWorld().getName());
@@ -129,10 +128,10 @@ public class PostgresHandler implements DataHandler {
         CompletableFuture<Optional<Location>> future = new CompletableFuture<>();
         String sql = "SELECT world_name, x, y, z FROM homes WHERE player_uuid = ? AND home_name = ?";
         dbManager.execute(connection -> {
-            try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            try (var stmt = connection.prepareStatement(sql)) {
                 stmt.setString(1, player.getUniqueId().toString());
                 stmt.setString(2, homeName);
-                try (ResultSet rs = stmt.executeQuery()) {
+                try (var rs = stmt.executeQuery()) {
                     if (rs.next()) {
                         String worldName = rs.getString("world_name");
                         double x = rs.getDouble("x");
@@ -162,9 +161,9 @@ public class PostgresHandler implements DataHandler {
         List<String> homes = new ArrayList<>();
         String sql = "SELECT home_name FROM homes WHERE player_uuid = ?";
         dbManager.execute(connection -> {
-            try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            try (var stmt = connection.prepareStatement(sql)) {
                 stmt.setString(1, player.getUniqueId().toString());
-                try (ResultSet rs = stmt.executeQuery()) {
+                try (var rs = stmt.executeQuery()) {
                     while (rs.next()) {
                         homes.add(rs.getString("home_name"));
                     }
