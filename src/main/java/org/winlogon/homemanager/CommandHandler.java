@@ -1,6 +1,7 @@
 package org.winlogon.homemanager;
 
 import dev.jorel.commandapi.CommandAPICommand;
+import dev.jorel.commandapi.SuggestionInfo;
 import dev.jorel.commandapi.arguments.ArgumentSuggestions;
 import dev.jorel.commandapi.arguments.StringArgument;
 import dev.jorel.commandapi.executors.CommandArguments;
@@ -8,7 +9,6 @@ import dev.jorel.commandapi.executors.CommandArguments;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.JoinConfiguration;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 
 import org.bukkit.Location;
@@ -21,7 +21,6 @@ import java.util.concurrent.CompletableFuture;
 public class CommandHandler<Handler extends DataHandler> {
     private final Handler databaseHandler;
     private final JavaPlugin plugin;
-    private final MiniMessage miniMessage = MiniMessage.miniMessage();
 
     public CommandHandler(Handler databaseHandler, JavaPlugin plugin) {
         this.databaseHandler = databaseHandler;
@@ -111,7 +110,7 @@ public class CommandHandler<Handler extends DataHandler> {
         });
     }
 
-    private CompletableFuture<String[]> getHomes(SuggestionsInfo info) {
+    private CompletableFuture<String[]> getHomes(SuggestionInfo<CommandSender> info) {
         if (info.sender() instanceof Player player) {
             return databaseHandler.getHomes(player).thenApply(list -> list.toArray(new String[0]));
         }
