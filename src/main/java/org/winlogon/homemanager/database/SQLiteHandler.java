@@ -13,20 +13,23 @@ import java.io.File;
 import java.sql.*;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.logging.Logger;
 import java.util.Optional;
 
 public class SQLiteHandler implements DataHandler {
-
+    private File dataFolder;
+    private File databaseFile;
     private Connection connection;
+    private Logger logger;
 
     public SQLiteHandler(File dataFolder) {
-        setupDatabase(dataFolder);
+        this.dataFolder = dataFolder;
+        this.databaseFile = new File(dataFolder, "homes.db");
+        setupDatabase();
     }
 
-    private void setupDatabase(File dataFolder) {
+    private void setupDatabase() {
         try {
-            var databaseFile = new File(dataFolder, "homes.db");
-            connection = DriverManager.getConnection("jdbc:sqlite:" + databaseFile.getAbsolutePath());
             try (Statement stmt = connection.createStatement()) {
                 stmt.executeUpdate("""
                         CREATE TABLE IF NOT EXISTS homes (
@@ -153,6 +156,27 @@ public class SQLiteHandler implements DataHandler {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void checkConnection() {
+        try {
+            if (connection == null || connection.isClosed()) {
+                logger.warning("Connection seems closed. Trying to reconnect with the database.");
+                setupDatabase();
+            } else {
+                try (Statement stmt = connection.createStatement()) {
+                    stmt.executeQuery("SELECT 1");
+                }
+            }
+        } catch (SQLException e) {
+            logger.warning(
+                STR."""
+                Exception caught while trying to reconnect, attempt to re-establish the connection...
+                Error caught \{e.getMessage()}
+                """);
+            setupDatabase();
         }
     }
 }
