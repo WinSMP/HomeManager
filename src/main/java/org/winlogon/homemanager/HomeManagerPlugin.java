@@ -46,7 +46,7 @@ public class HomeManagerPlugin extends JavaPlugin {
             return;
         }
 
-        var commandHandler = new CommandHandler<DataHandler>(queryRunner);
+        var commandHandler = new CommandHandler<DataHandler>(databaseHandler, this);
         commandHandler.registerCommands();
     }
 
