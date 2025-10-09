@@ -1,64 +1,76 @@
 package org.winlogon.homemanager;
 
-import java.util.logging.Logger;
-
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
-
-import org.winlogon.homemanager.database.SQLiteHandler;
+import org.postgresql.ds.PGSimpleDataSource;
+import org.sqlite.SQLiteDataSource;
+import org.winlogon.homemanager.database.QueryRunner;
 import org.winlogon.homemanager.database.PostgresHandler;
-import org.winlogon.homemanager.database.AdvancedDatabaseConfig;
+import org.winlogon.homemanager.database.SQLiteHandler;
+
+import javax.sql.DataSource;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class HomeManagerPlugin extends JavaPlugin {
     private DataHandler databaseHandler;
-    FileConfiguration config;
-    Logger logger;
+    private QueryRunner queryRunner;
+    private FileConfiguration config;
+    private Logger logger;
 
     @Override
     public void onEnable() {
         saveDefaultConfig();
-
-        // load postgresql jdbc driver
-        try {
-            Class.forName("org.postgresql.Driver");
-        } catch (ClassNotFoundException _) {
-            throw new RuntimeException("PostgreSQL JDBC Driver not found.");
-        }
-
         this.config = getConfig();
         this.logger = getLogger();
-        var postgresEnabled = config.getBoolean("postgres.enabled", false);
-        handleDatabaseType(postgresEnabled);
 
-        CommandHandler<DataHandler> commandHandler = new CommandHandler<>(databaseHandler);
+        try {
+            DataSource dataSource = setupDataSource();
+            int poolSize = config.getInt("database.pool-size", 10);
+            this.queryRunner = new QueryRunner(this, dataSource, poolSize);
+            logger.info("DatabaseManager initialized successfully.");
+
+            boolean isPostgres = config.getBoolean("postgres.enabled", false);
+            if (isPostgres) {
+                databaseHandler = new PostgresHandler(queryRunner, logger);
+                logger.info("Using PostgreSQL for home storage.");
+            } else {
+                databaseHandler = new SQLiteHandler(queryRunner, logger);
+                logger.info("Using SQLite for home storage.");
+            }
+
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Failed to initialize database connection pool. Disabling plugin.", e);
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
+
+        var commandHandler = new CommandHandler<DataHandler>(databaseHandler, this);
         commandHandler.registerCommands();
     }
 
     @Override
     public void onDisable() {
-        if (databaseHandler != null) {
-            databaseHandler.closeConnection();
+        if (queryRunner != null) {
+            queryRunner.shutdown();
         }
     }
 
-    private void handleDatabaseType(boolean isPostgres) {
-        if (!isPostgres) {
-            databaseHandler = new SQLiteHandler(getDataFolder());
-            logger.info("Using SQLite for home storage.");
-            return;
+    private DataSource setupDataSource() {
+        if (config.getBoolean("postgres.enabled", false)) {
+            var ds = new PGSimpleDataSource();
+            ds.setServerNames(new String[] { config.getString("postgres.host", "localhost") } );
+            ds.setPortNumbers(new int[] { config.getInt("postgres.port", 5432) } );
+            ds.setDatabaseName(config.getString("postgres.database", "minecraft"));
+            ds.setUser(config.getString("postgres.username", "postgres"));
+            ds.setPassword(config.getString("postgres.password", ""));
+            return ds;
+        } else {
+            var ds = new SQLiteDataSource();
+            ds.setUrl("jdbc:sqlite:" + getDataFolder().getAbsolutePath() + "/homes.db");
+            return ds;
         }
-
-        var databaseConfig = new AdvancedDatabaseConfig(
-            isPostgres,
-            config.getString("postgres.host", "localhost"),
-            config.getInt("postgres.port", 5432),
-            config.getString("postgres.database", "minecraft"),
-            config.getString("postgres.username", "postgres"),
-            config.getString("postgres.password", "")
-        );
-    
-        databaseHandler = new PostgresHandler(databaseConfig, logger);
-        getLogger().info("Using PostgreSQL for home storage.");
     }
 }
 
