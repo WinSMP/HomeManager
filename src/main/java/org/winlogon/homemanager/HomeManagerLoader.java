@@ -37,7 +37,14 @@ public class HomeManagerLoader implements PluginLoader {
 
         resolver.addDependency(
             new Dependency(
-                new DefaultArtifact("org.postgresql:postgresql:42.7.5"),
+                new DefaultArtifact("org.postgresql:postgresql:42.7.7"),
+                null
+            )
+        );
+
+        resolver.addDependency(
+            new Dependency(
+                new DefaultArtifact("org.xerial:sqlite-jdbc:3.45.3.0"),
                 null
             )
         );
