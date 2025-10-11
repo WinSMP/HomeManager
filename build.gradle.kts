@@ -3,7 +3,7 @@ import java.util.Date
 import java.util.TimeZone
 
 plugins {
-    id("com.gradleup.shadow") version "9.1.0"
+    id("com.gradleup.shadow") version "9.2.2"
     java
 }
 
@@ -47,7 +47,6 @@ repositories {
         url = uri("https://repo.papermc.io/repository/maven-public/")
         content {
             includeModule("io.papermc.paper", "paper-api")
-            includeModule("io.papermc", "paperlib")
             includeModule("net.md-5", "bungeecord-chat")
         }
     }
@@ -77,10 +76,11 @@ dependencies {
 
     compileOnly("com.github.walker84837:JResult:1.4.0")
     compileOnly("org.postgresql:postgresql:42.7.8")
+    compileOnly("org.xerial:sqlite-jdbc:3.45.3.0")
 
     testImplementation("io.papermc.paper:paper-api:1.21.9-R0.1-SNAPSHOT")
-    testImplementation("org.junit.jupiter:junit-jupiter:5.13.4")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.13.4")
+    testImplementation("org.junit.jupiter:junit-jupiter:6.0.0")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.0.0")
 }
 
 tasks.test {
@@ -93,7 +93,7 @@ tasks.processResources {
             "NAME" to rootProject.name,
             "VERSION" to version,
             "PACKAGE" to project.group.toString(),
-	        "DESCRIPTION" to projectDescription,
+            "DESCRIPTION" to projectDescription,
             "MCVERSION" to minecraftBase,
         ))
     }
@@ -101,7 +101,6 @@ tasks.processResources {
 
 tasks.named<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>("shadowJar") {
     archiveClassifier.set("")
-    relocate("io.papermc.lib", "shadow.io.papermc.paperlib")
     minimize()
 }
 
