@@ -9,9 +9,11 @@ plugins {
 
 group = "org.winlogon.homemanager"
 
+
 fun getTime(): String {
-    val sdf = SimpleDateFormat("yyMMdd-HHmm")
-    sdf.timeZone = TimeZone.getTimeZone("UTC")
+    val sdf = SimpleDateFormat("yyyy-MM-dd'T'HHmmss'Z'").apply {
+        timeZone = TimeZone.getTimeZone("UTC")
+    }
     return sdf.format(Date()).toString()
 }
 
