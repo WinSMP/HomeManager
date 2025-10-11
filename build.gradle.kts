@@ -42,8 +42,6 @@ java {
 }
 
 repositories {
-    mavenCentral()
-
     maven {
         name = "papermc"
         url = uri("https://repo.papermc.io/repository/maven-public/")
@@ -61,13 +59,12 @@ repositories {
         }
     }
 
-    maven {
-        url = uri("https://repo.codemc.org/repository/maven-public/")
-    }
+    maven("https://repo.codemc.org/repository/maven-public/")
+    maven("https://jitpack.io")
+    maven("https://repo.papermc.io/repository/maven-snapshots/")
+    maven("https://artifactory.papermc.io/artifactory/universe/")
 
-    maven {
-        url = uri("https://jitpack.io")
-    }
+    mavenCentral()
 }
 
 dependencies {
