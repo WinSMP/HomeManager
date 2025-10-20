@@ -72,7 +72,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly("dev.jorel:commandapi-bukkit-core:10.1.2")
+    compileOnly("dev.jorel:commandapi-bukkit-core:11.0.0")
     compileOnly("io.papermc.paper:paper-api:1.21.10-R0.1-SNAPSHOT")
 
     compileOnly("com.github.walker84837:JResult:1.4.0")
