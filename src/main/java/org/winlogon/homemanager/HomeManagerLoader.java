@@ -30,14 +30,14 @@ public class HomeManagerLoader implements PluginLoader {
 
         resolver.addDependency(
             new Dependency(
-                new DefaultArtifact("com.github.walker84837:JResult:1.3.0"),
+                new DefaultArtifact("com.github.walker84837:JResult:1.4.0"),
                 null
             )
         );
 
         resolver.addDependency(
             new Dependency(
-                new DefaultArtifact("org.postgresql:postgresql:42.7.7"),
+                new DefaultArtifact("org.postgresql:postgresql:42.7.8"),
                 null
             )
         );
