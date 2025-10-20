@@ -1,6 +1,10 @@
 package org.winlogon.homemanager;
 
 import org.bukkit.configuration.file.FileConfiguration;
+import dev.jorel.commandapi.CommandAPI;
+import dev.jorel.commandapi.CommandAPIPaperConfig;
+import dev.jorel.commandapi.CommandAPI;
+import dev.jorel.commandapi.CommandAPIPaperConfig;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.postgresql.ds.PGSimpleDataSource;
 import org.sqlite.SQLiteDataSource;
@@ -20,7 +24,13 @@ public class HomeManagerPlugin extends JavaPlugin {
     private Logger logger;
 
     @Override
+    public void onLoad() {
+        CommandAPI.onLoad(new CommandAPIPaperConfig(this).verboseOutput(true));
+    }
+
+    @Override
     public void onEnable() {
+        CommandAPI.onEnable();
         saveDefaultConfig();
         this.config = getConfig();
         this.logger = getLogger();
@@ -52,6 +62,7 @@ public class HomeManagerPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        CommandAPI.onDisable();
         if (queryRunner != null) {
             queryRunner.shutdown();
         }

@@ -6,9 +6,4 @@ loader: "${PACKAGE}.HomeManagerLoader"
 authors: ["winlogon"]
 description: "${DESCRIPTION}"
 folia-supported: true
-dependencies:
-  server:
-    CommandAPI:
-      load: BEFORE
-      required: true
-      join-classpath: true
+

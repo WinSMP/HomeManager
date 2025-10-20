@@ -44,6 +44,8 @@ java {
 }
 
 repositories {
+    mavenCentral()
+
     maven {
         name = "papermc"
         url = uri("https://repo.papermc.io/repository/maven-public/")
@@ -65,12 +67,10 @@ repositories {
     maven("https://jitpack.io")
     maven("https://repo.papermc.io/repository/maven-snapshots/")
     maven("https://artifactory.papermc.io/artifactory/universe/")
-
-    mavenCentral()
 }
 
 dependencies {
-    compileOnly("dev.jorel:commandapi-bukkit-core:10.1.2")
+    implementation("dev.jorel:commandapi-paper-shade:11.0.0")
     compileOnly("io.papermc.paper:paper-api:1.21.10-R0.1-SNAPSHOT")
 
     compileOnly("com.github.walker84837:JResult:1.4.0")
@@ -103,6 +103,7 @@ tasks.processResources {
 tasks.named<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>("shadowJar") {
     archiveClassifier.set("")
     minimize()
+    relocate("dev.jorel.commandapi", "org.winlogon.homemanager.commandapi")
 }
 
 tasks.jar {
