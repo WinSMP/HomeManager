@@ -12,43 +12,33 @@ public class HomeManagerLoader implements PluginLoader {
     public void classloader(PluginClasspathBuilder classpathBuilder) {
         var resolver = new MavenLibraryResolver();
 
-        resolver.addRepository(
-            new RemoteRepository.Builder(
-                "central", 
-                "default", 
-                MavenLibraryResolver.MAVEN_CENTRAL_DEFAULT_MIRROR
-            ).build()
-        );
+        var repos = new RemoteRepository[] {
+            addRepository("central", MavenLibraryResolver.MAVEN_CENTRAL_DEFAULT_MIRROR),
+            addRepository("jitpack", "https://jitpack.io"),
+        };
 
-        resolver.addRepository(
-            new RemoteRepository.Builder(
-                "jitpack", 
-                "default", 
-                "https://jitpack.io"
-            ).build()
-        );
+        var deps = new Dependency[] {
+            addDependency("com.github.walker84837", "JResult", "1.4.0"),
+            addDependency("org.postgresql", "postgresql", "42.7.8"),
+            addDependency("org.xerial", "sqlite-jdbc", "3.45.3.0"),
+        };
 
-        resolver.addDependency(
-            new Dependency(
-                new DefaultArtifact("com.github.walker84837:JResult:1.4.0"),
-                null
-            )
-        );
+        for (var repository : repos) {
+            resolver.addRepository(repository);
+        }
 
-        resolver.addDependency(
-            new Dependency(
-                new DefaultArtifact("org.postgresql:postgresql:42.7.8"),
-                null
-            )
-        );
-
-        resolver.addDependency(
-            new Dependency(
-                new DefaultArtifact("org.xerial:sqlite-jdbc:3.45.3.0"),
-                null
-            )
-        );
+        for (var dependency : deps) {
+            resolver.addDependency(dependency);
+        }
 
         classpathBuilder.addLibrary(resolver);
+    }
+
+    private Dependency addDependency(String groupId, String artifactId, String version) {
+        return new Dependency(new DefaultArtifact(groupId + ":" + artifactId + ":" + version), null);
+    }
+
+    private RemoteRepository addRepository(String id, String url) {
+        return new RemoteRepository.Builder(id, "default", url).build();
     }
 }
