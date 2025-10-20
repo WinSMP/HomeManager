@@ -77,10 +77,9 @@ dependencies {
     compileOnly("org.postgresql:postgresql:42.7.8")
     compileOnly("org.xerial:sqlite-jdbc:3.45.3.0")
     compileOnly("net.kyori:adventure-api:4.25.0")
-
     testImplementation("io.papermc.paper:paper-api:1.21.9-R0.1-SNAPSHOT")
-    testImplementation("org.junit.jupiter:junit-jupiter:6.0.0")
     testImplementation("net.kyori:adventure-api:4.25.0")
+    testImplementation("org.junit.jupiter:junit-jupiter:6.0.0")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.0.0")
 }
 
