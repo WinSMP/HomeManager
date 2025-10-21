@@ -1,10 +1,9 @@
 package org.winlogon.homemanager;
 
+import dev.jorel.commandapi.CommandAPI;
+import dev.jorel.commandapi.CommandAPIPaperConfig;
+
 import org.bukkit.configuration.file.FileConfiguration;
-import dev.jorel.commandapi.CommandAPI;
-import dev.jorel.commandapi.CommandAPIPaperConfig;
-import dev.jorel.commandapi.CommandAPI;
-import dev.jorel.commandapi.CommandAPIPaperConfig;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.postgresql.ds.PGSimpleDataSource;
 import org.sqlite.SQLiteDataSource;
@@ -14,14 +13,18 @@ import org.winlogon.homemanager.database.SQLiteHandler;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class HomeManagerPlugin extends JavaPlugin {
+    private static final String POSTGRES = "postgres.";
+
     private DataHandler databaseHandler;
     private QueryRunner queryRunner;
     private FileConfiguration config;
-    private Logger logger;
+    private static Logger logger;
 
     @Override
     public void onLoad() {
@@ -41,7 +44,7 @@ public class HomeManagerPlugin extends JavaPlugin {
             this.queryRunner = new QueryRunner(this, dataSource, poolSize);
             logger.info("DatabaseManager initialized successfully.");
 
-            boolean isPostgres = config.getBoolean("postgres.enabled", false);
+            boolean isPostgres = config.getBoolean(POSTGRES + "enabled", false);
             if (isPostgres) {
                 databaseHandler = new PostgresHandler(queryRunner, logger);
                 logger.info("Using PostgreSQL for home storage.");
@@ -69,19 +72,47 @@ public class HomeManagerPlugin extends JavaPlugin {
     }
 
     private DataSource setupDataSource() {
-        if (config.getBoolean("postgres.enabled", false)) {
-            var ds = new PGSimpleDataSource();
-            ds.setServerNames(new String[] { config.getString("postgres.host", "localhost") } );
-            ds.setPortNumbers(new int[] { config.getInt("postgres.port", 5432) } );
-            ds.setDatabaseName(config.getString("postgres.database", "minecraft"));
-            ds.setUser(config.getString("postgres.username", "postgres"));
-            ds.setPassword(config.getString("postgres.password", ""));
-            return ds;
+        boolean isPostgresEnabled = config.getBoolean(POSTGRES + "enabled", false);
+        if (isPostgresEnabled) {
+            return getPostgresDataSource();
         } else {
             var ds = new SQLiteDataSource();
             ds.setUrl("jdbc:sqlite:" + getDataFolder().getAbsolutePath() + "/homes.db");
             return ds;
         }
     }
-}
 
+    private PGSimpleDataSource getPostgresDataSource() {
+        var ds = new PGSimpleDataSource();
+        var host = config.getString(POSTGRES + "host", "localhost");
+        var port = config.getInt(POSTGRES + "port", 5432);
+        var dbName = config.getString(POSTGRES + "database", "minecraft");
+        var user = config.getString(POSTGRES + "username", "postgres");
+        var password = config.getString(POSTGRES + "password");
+
+        // Avoid admins from doing the silly mistake of letting the password empty
+        if (password == null && getPasswordOverride().orElse(false)) {
+            Objects.requireNonNull(password, "The password must be set! If you want to override this, "
+                    + "run this with -Dhomemanager.ignore-empty-password=false");
+        }
+
+        ds.setServerNames(new String[] { host });
+        ds.setPortNumbers(new int[] { port });
+        ds.setDatabaseName(dbName);
+        ds.setUser(user);
+        ds.setPassword(password);
+        return ds;
+    }
+
+    private Optional<Boolean> getPasswordOverride() {
+        final String flag = "homemanager.ignore-empty-password";
+        try {
+            return Optional.ofNullable(System.getProperty(flag))
+                           .map(String::toLowerCase)
+                           .map(Boolean::parseBoolean);
+        } catch (Exception e) {
+            logger.warning(STR."Plugin flag \{flag} was found but didn't parse successfully.");
+            return Optional.empty();
+        }
+    }
+}
