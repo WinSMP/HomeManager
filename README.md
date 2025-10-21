@@ -74,6 +74,21 @@ Usage (we'll take *MyHome* for example):
 	/home help
 	```
 
+### `config.yml`
+
+This plugin uses a YAML file for configuration. Here's the general structure:
+
+|Value|Default|Description|
+|---|---|---|
+|`postgres.enabled`|`false`|Whether the server should use PostgreSQL or SQLite|
+|`postgres.host`|`localhost`|Database's host, I don't think you should change this value|
+|`postgres.port`|5432|The port to access PostgreSQL. Should be 5432 unless you're doing some weird things on your side|
+|`postgres.database`|`home_manager`|The table where homes will be saved in|
+|`postgres.username`|`postgres`|The username which owns the DB table. Change this for security purposes|
+|`postgres.password`|None|If you have PostgreSQL enabled and don't have a password, the plugin will throw an error|
+
+In case you don't wanna set a password, you can run the server with `-Dhomemanager.ignore-empty-password=true` flag.
+
 ## Contributing
 
 We welcome contributions to HomeManager! If you'd like to contribute:

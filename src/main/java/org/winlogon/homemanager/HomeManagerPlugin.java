@@ -20,6 +20,7 @@ import java.util.logging.Logger;
 
 public class HomeManagerPlugin extends JavaPlugin {
     private static final String POSTGRES = "postgres.";
+    private final String IGNORE_EMPTY_PASSWORD = "homemanager.ignore-empty-password";
 
     private DataHandler databaseHandler;
     private QueryRunner queryRunner;
@@ -93,7 +94,7 @@ public class HomeManagerPlugin extends JavaPlugin {
         // Avoid admins from doing the silly mistake of letting the password empty
         if (password == null && getPasswordOverride().orElse(false)) {
             Objects.requireNonNull(password, "The password must be set! If you want to override this, "
-                    + "run this with -Dhomemanager.ignore-empty-password=false");
+                    + STR."run this with -D\{IGNORE_EMPTY_PASSWORD}=true");
         }
 
         ds.setServerNames(new String[] { host });
@@ -105,13 +106,13 @@ public class HomeManagerPlugin extends JavaPlugin {
     }
 
     private Optional<Boolean> getPasswordOverride() {
-        final String flag = "homemanager.ignore-empty-password";
+        
         try {
-            return Optional.ofNullable(System.getProperty(flag))
+            return Optional.ofNullable(System.getProperty(IGNORE_EMPTY_PASSWORD))
                            .map(String::toLowerCase)
                            .map(Boolean::parseBoolean);
         } catch (Exception e) {
-            logger.warning(STR."Plugin flag \{flag} was found but didn't parse successfully.");
+            logger.warning(STR."Plugin flag \{IGNORE_EMPTY_PASSWORD} was found but didn't parse successfully.");
             return Optional.empty();
         }
     }
