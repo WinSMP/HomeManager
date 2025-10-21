@@ -3,15 +3,17 @@ import java.util.Date
 import java.util.TimeZone
 
 plugins {
-    id("com.gradleup.shadow") version "9.1.0"
+    id("com.gradleup.shadow") version "9.2.2"
     java
 }
 
 group = "org.winlogon.homemanager"
 
+
 fun getTime(): String {
-    val sdf = SimpleDateFormat("yyMMdd-HHmm")
-    sdf.timeZone = TimeZone.getTimeZone("UTC")
+    val sdf = SimpleDateFormat("yyyy-MM-dd'T'HHmmss'Z'").apply {
+        timeZone = TimeZone.getTimeZone("UTC")
+    }
     return sdf.format(Date()).toString()
 }
 
@@ -42,12 +44,13 @@ java {
 }
 
 repositories {
+    mavenCentral()
+
     maven {
         name = "papermc"
         url = uri("https://repo.papermc.io/repository/maven-public/")
         content {
             includeModule("io.papermc.paper", "paper-api")
-            includeModule("io.papermc", "paperlib")
             includeModule("net.md-5", "bungeecord-chat")
         }
     }
@@ -60,27 +63,25 @@ repositories {
         }
     }
 
-    maven {
-        url = uri("https://repo.codemc.org/repository/maven-public/")
-    }
-
-    maven {
-        url = uri("https://jitpack.io")
-    }
-
-    mavenCentral()
+    maven("https://repo.codemc.org/repository/maven-public/")
+    maven("https://jitpack.io")
+    maven("https://repo.papermc.io/repository/maven-snapshots/")
+    maven("https://artifactory.papermc.io/artifactory/universe/")
 }
 
 dependencies {
-    compileOnly("dev.jorel:commandapi-bukkit-core:10.1.2")
+    implementation("dev.jorel:commandapi-paper-shade:11.0.0")
     compileOnly("io.papermc.paper:paper-api:1.21.10-R0.1-SNAPSHOT")
 
     compileOnly("com.github.walker84837:JResult:1.4.0")
     compileOnly("org.postgresql:postgresql:42.7.8")
+    compileOnly("net.kyori:adventure-api:4.25.0")
+    compileOnly("org.xerial:sqlite-jdbc:3.45.3.0")
 
     testImplementation("io.papermc.paper:paper-api:1.21.10-R0.1-SNAPSHOT")
-    testImplementation("org.junit.jupiter:junit-jupiter:5.13.4")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.13.4")
+    testImplementation("net.kyori:adventure-api:4.25.0")
+    testImplementation("org.junit.jupiter:junit-jupiter:6.0.0")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.0.0")
 }
 
 tasks.test {
@@ -93,7 +94,7 @@ tasks.processResources {
             "NAME" to rootProject.name,
             "VERSION" to version,
             "PACKAGE" to project.group.toString(),
-	        "DESCRIPTION" to projectDescription,
+            "DESCRIPTION" to projectDescription,
             "MCVERSION" to minecraftBase,
         ))
     }
@@ -101,8 +102,8 @@ tasks.processResources {
 
 tasks.named<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>("shadowJar") {
     archiveClassifier.set("")
-    relocate("io.papermc.lib", "shadow.io.papermc.paperlib")
     minimize()
+    relocate("dev.jorel.commandapi", "org.winlogon.homemanager.commandapi")
 }
 
 tasks.jar {
