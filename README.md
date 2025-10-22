@@ -91,23 +91,15 @@ In case you don't wanna set a password, you can run the server with `-Dhomemanag
 
 ## Contributing
 
-We welcome contributions to HomeManager! If you'd like to contribute:
-
-1. Fork the repository.
-2. Create a feature branch (`git checkout -b feature-branch`).
-3. Commit your changes (`git commit -am 'Add new feature'`).
-4. Push to the branch (`git push origin feature-branch`).
-5. Submit a pull request.
-
-Feel free to open an issue if you encounter any bugs or have feature requests.
+We welcome contributions to HomeManager! If you'd like to contribute, please read the [contributing guidelines](CONTRIBUTING.md).
 
 ## Links
 
 Here are some useful links to the HomeManager project:
 
-- Project homepage: <https://github.com/walker84837/HomeManager>
-- Repository: <https://github.com/walker84837/HomeManager>
-- Issue tracker: <https://github.com/walker84837/HomeManager/issues>
+- Project homepage: <https://github.com/WinSMP/HomeManager>
+- Repository: <https://github.com/WinSMP/HomeManager>
+- Issue tracker: <https://github.com/WinSMP/HomeManager/issues>
 
 ## Licensing
 
