@@ -80,7 +80,7 @@ dependencies {
 
     testImplementation("io.papermc.paper:paper-api:1.21.10-R0.1-SNAPSHOT")
     testImplementation("net.kyori:adventure-api:4.25.0")
-    testImplementation("org.junit.jupiter:junit-jupiter:6.0.0")
+    testImplementation("org.junit.jupiter:junit-jupiter:6.0.1")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.0.1")
 }
 
