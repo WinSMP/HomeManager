@@ -94,6 +94,23 @@ public final class QueryRunner {
         });
     }
 
+    public <R> R executeQuery(SQLFunction<Connection, R> action) throws SQLException {
+        Connection connection = null;
+        try {
+            connection = getConnection();
+            return action.apply(connection);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            plugin.getLogger().log(Level.SEVERE, "Database query interrupted.", e);
+            throw new SQLException(e);
+        } catch (SQLException e) {
+            plugin.getLogger().log(Level.SEVERE, "An error occurred during a database operation.", e);
+            throw e;
+        } finally {
+            releaseConnection(connection);
+        }
+    }
+
     public void shutdown() {
         executor.shutdown();
         try {
@@ -115,5 +132,10 @@ public final class QueryRunner {
     @FunctionalInterface
     public interface SQLConsumer<T> {
         void accept(T t) throws SQLException;
+    }
+
+    @FunctionalInterface
+    public interface SQLFunction<T, R> {
+        R apply(T t) throws SQLException;
     }
 }
