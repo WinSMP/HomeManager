@@ -37,7 +37,7 @@ public class HomeManagerPlugin extends JavaPlugin {
         CommandAPI.onEnable();
         saveDefaultConfig();
         this.config = getConfig();
-        this.logger = getLogger();
+        logger = getLogger();
 
         try {
             DataSource dataSource = setupDataSource();
