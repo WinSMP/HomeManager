@@ -36,16 +36,16 @@ public class CommandHandler<Handler extends DataHandler> {
             .withSubcommand(new CommandAPICommand("delete")
                 .withArguments(new StringArgument("home-name").replaceSuggestions(ArgumentSuggestions.strings(this::getHomes)))
                 .executesPlayer(this::deleteHome))
-            .withSubcommand(new CommandAPICommand("set")
+            .withSubcommand(new CommandAPICommand("update")
                 .withArguments(new StringArgument("home-name").replaceSuggestions(ArgumentSuggestions.strings(this::getHomes)))
-                .executesPlayer(this::setHome))
+                .executesPlayer(this::updateHome))
             .withSubcommand(new CommandAPICommand("teleport")
                 .withArguments(new StringArgument("home-name").replaceSuggestions(ArgumentSuggestions.strings(this::getHomes)))
                 .executesPlayer(this::teleportHome))
             .register();
     }
 
-    private void setHome(Player player, CommandArguments args) {
+    private void updateHome(Player player, CommandArguments args) {
         var homeName = (String) args.get("home-name");
         var result = databaseHandler.updateHome(player, homeName, player.getLocation());
         result.match(
