@@ -11,3 +11,6 @@ postgres:
   username: "postgres"
   # CHANGE THIS
   password: ""
+
+# Number of homes to display per page in the /home list command
+page-size: 5

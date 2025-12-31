@@ -4,6 +4,7 @@ import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.SuggestionInfo;
 import dev.jorel.commandapi.arguments.ArgumentSuggestions;
 import dev.jorel.commandapi.arguments.StringArgument;
+import dev.jorel.commandapi.arguments.IntegerArgument;
 import dev.jorel.commandapi.executors.CommandArguments;
 
 import net.kyori.adventure.text.Component;
@@ -19,10 +20,12 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class CommandHandler<Handler extends DataHandler> {
     private final Handler databaseHandler;
     private final JavaPlugin plugin;
+    private final int pageSize;
 
-    public CommandHandler(Handler databaseHandler, JavaPlugin plugin) {
+    public CommandHandler(Handler databaseHandler, JavaPlugin plugin, int pageSize) {
         this.databaseHandler = databaseHandler;
         this.plugin = plugin;
+        this.pageSize = pageSize;
     }
 
     public void registerCommands() {
@@ -32,6 +35,7 @@ public class CommandHandler<Handler extends DataHandler> {
                 .withArguments(new StringArgument("name"))
                 .executesPlayer(this::createHome))
             .withSubcommand(new CommandAPICommand("list")
+                .withArguments(new IntegerArgument("page").setOptional(true))
                 .executesPlayer(this::listHomes))
             .withSubcommand(new CommandAPICommand("delete")
                 .withArguments(new StringArgument("home-name").replaceSuggestions(ArgumentSuggestions.strings(this::getHomes)))
@@ -112,18 +116,33 @@ public class CommandHandler<Handler extends DataHandler> {
     }
 
     private void listHomes(Player player, CommandArguments args) {
-        var homes = databaseHandler.getHomes(player);
-        Component homeListComponent = homes.isEmpty()
-            ? Component.text("None", NamedTextColor.GRAY)
-            : Component.join(
-                JoinConfiguration.separator(Component.text(", ", NamedTextColor.GRAY)),
-                homes.stream()
-                    .map(home -> Component.text(home, NamedTextColor.DARK_AQUA))
-                    .toArray(Component[]::new)
-            );
+        int page = (Integer) args.getOrDefault("page", 1); // Get page number, default to 1
+
+        PaginatedResult paginatedResult = databaseHandler.getHomesPaginated(player, page, this.pageSize);
+        var homes = paginatedResult.homes();
+        int totalPages = paginatedResult.totalPages();
+
+        if (homes.isEmpty()) {
+            player.sendMessage(Component.text("You have no homes.", NamedTextColor.GRAY));
+            return;
+        }
+
+        // Clamp page to be within valid range (already handled in DataHandler but good for display consistency)
+        int actualPage = Math.max(1, Math.min(page, totalPages));
+
+        Component homeListComponent = Component.join(
+            JoinConfiguration.separator(Component.text(", ", NamedTextColor.GRAY)),
+            homes.stream()
+                .map(home -> Component.text(home, NamedTextColor.DARK_AQUA))
+                .toArray(Component[]::new)
+        );
 
         player.sendMessage(
-            Component.text("Your homes: ", NamedTextColor.GRAY)
+            Component.text("Your homes (Page ", NamedTextColor.GRAY)
+                .append(Component.text(actualPage, NamedTextColor.GREEN))
+                .append(Component.text("/", NamedTextColor.GRAY))
+                .append(Component.text(totalPages, NamedTextColor.GREEN))
+                .append(Component.text("): ", NamedTextColor.GRAY))
                 .append(homeListComponent)
         );
     }

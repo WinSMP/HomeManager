@@ -38,6 +38,7 @@ public class HomeManagerPlugin extends JavaPlugin {
         saveDefaultConfig();
         this.config = getConfig();
         logger = getLogger();
+        int pageSize = config.getInt("page-size", 5);
 
         try {
             DataSource dataSource = setupDataSource();
@@ -53,6 +54,7 @@ public class HomeManagerPlugin extends JavaPlugin {
                 databaseHandler = new SQLiteHandler(queryRunner, logger);
                 logger.info("Using SQLite for home storage.");
             }
+            pageSize = config.getInt("page-size", 5);
 
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "Failed to initialize database connection pool. Disabling plugin.", e);
@@ -60,7 +62,7 @@ public class HomeManagerPlugin extends JavaPlugin {
             return;
         }
 
-        var commandHandler = new CommandHandler<DataHandler>(databaseHandler, this);
+        var commandHandler = new CommandHandler<DataHandler>(databaseHandler, this, pageSize);
         commandHandler.registerCommands();
     }
 
