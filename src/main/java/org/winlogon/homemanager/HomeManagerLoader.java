@@ -21,7 +21,7 @@ public class HomeManagerLoader implements PluginLoader {
         var deps = new Dependency[] {
             addDependency("com.github.walker84837", "JResult", "1.4.0"),
             addDependency("org.postgresql", "postgresql", "42.7.8"),
-            addDependency("org.xerial", "sqlite-jdbc", "3.50.3.0"),
+            addDependency("org.xerial", "sqlite-jdbc", "3.51.1.0"),
         };
 
         for (var repository : repos) {
@@ -36,7 +36,7 @@ public class HomeManagerLoader implements PluginLoader {
     }
 
     private Dependency addDependency(String groupId, String artifactId, String version) {
-        return new Dependency(new DefaultArtifact(groupId + ":" + artifactId + ":" + version), null);
+        return new Dependency(new DefaultArtifact("%s:%s:%s".formatted(groupId, artifactId, version)), null);
     }
 
     private RemoteRepository addRepository(String id, String url) {
