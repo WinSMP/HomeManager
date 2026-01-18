@@ -95,8 +95,10 @@ public class HomeManagerPlugin extends JavaPlugin {
 
         // Avoid admins from doing the silly mistake of letting the password empty
         if (password == null && getPasswordOverride().orElse(false)) {
-            Objects.requireNonNull(password, "The password must be set! If you want to override this, "
-                    + STR."run this with -D\{IGNORE_EMPTY_PASSWORD}=true");
+            Objects.requireNonNull(
+                password, "The password must be set! If you want to override this, run this with -D%s=true"
+                        .formatted(IGNORE_EMPTY_PASSWORD)
+            );
         }
 
         ds.setServerNames(new String[] { host });
@@ -114,7 +116,7 @@ public class HomeManagerPlugin extends JavaPlugin {
                            .map(String::toLowerCase)
                            .map(Boolean::parseBoolean);
         } catch (Exception e) {
-            logger.warning(STR."Plugin flag \{IGNORE_EMPTY_PASSWORD} was found but didn't parse successfully.");
+            logger.warning("Plugin flag %s was found but didn't parse successfully.".formatted(IGNORE_EMPTY_PASSWORD));
             return Optional.empty();
         }
     }

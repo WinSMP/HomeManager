@@ -118,10 +118,6 @@ tasks.register("printProjectName") {
     }
 }
 
-tasks.withType<JavaCompile>().configureEach {
-    options.compilerArgs.add("--enable-preview")
-}
-
 tasks.register("release") {
     dependsOn(tasks.build)
 

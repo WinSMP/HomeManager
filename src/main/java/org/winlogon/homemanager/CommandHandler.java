@@ -52,12 +52,10 @@ public class CommandHandler<Handler extends DataHandler> {
     private void updateHome(Player player, CommandArguments args) {
         var homeName = (String) args.get("home-name");
         var result = databaseHandler.updateHome(player, homeName, player.getLocation());
-        result.match(
-            ok -> player.sendRichMessage(
+        result.match(ok -> player.sendRichMessage(
                 "<gray>Home <home-name> updated!</gray>",
                 Placeholder.component("home-name", Component.text(homeName, NamedTextColor.DARK_AQUA))
-            ),
-            err -> player.sendRichMessage(
+            ), err -> player.sendRichMessage(
                 "<red>Home <home-name> does not exist.</red>",
                 Placeholder.component("home-name", Component.text(homeName, NamedTextColor.DARK_AQUA))
             )
@@ -65,7 +63,7 @@ public class CommandHandler<Handler extends DataHandler> {
     }
 
     private void teleportHome(Player player, CommandArguments args) {
-        String homeName = (String) args.get("home-name");
+        var homeName = (String) args.get("home-name");
         var homeLocationOpt = databaseHandler.getHomeLocation(player, homeName);
         if (homeLocationOpt.isPresent()) {
             teleportPlayer(player, homeLocationOpt.get());
@@ -137,13 +135,10 @@ public class CommandHandler<Handler extends DataHandler> {
                 .toArray(Component[]::new)
         );
 
-        player.sendMessage(
-            Component.text("Your homes (Page ", NamedTextColor.GRAY)
-                .append(Component.text(actualPage, NamedTextColor.GREEN))
-                .append(Component.text("/", NamedTextColor.GRAY))
-                .append(Component.text(totalPages, NamedTextColor.GREEN))
-                .append(Component.text("): ", NamedTextColor.GRAY))
-                .append(homeListComponent)
+        player.sendRichMessage("Your homes (Page <actual>/<total>): <homes>",
+            Placeholder.unparsed("actual", String.valueOf(actualPage)),
+            Placeholder.unparsed("total", String.valueOf(totalPages)),
+            Placeholder.component("homes", homeListComponent)
         );
     }
 
