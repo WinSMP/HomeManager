@@ -78,7 +78,7 @@ dependencies {
     compileOnly("org.xerial:sqlite-jdbc:3.51.1.0")
 
     testImplementation("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
-    testImplementation("org.junit.jupiter:junit-jupiter:6.0.1")
+    testImplementation("org.junit.jupiter:junit-jupiter:6.0.2")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.0.1")
 }
 
