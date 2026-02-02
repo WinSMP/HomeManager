@@ -7,6 +7,9 @@
 # These are Windows script files and should use crlf
 *.bat           text eol=crlf
 
+# Exception for gradlew.bat to prevent line ending issues
+gradlew.bat     -text
+
 # Binary files should be left untouched
 *.jar           binary
 
