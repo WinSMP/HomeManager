@@ -75,7 +75,7 @@ dependencies {
 
     compileOnly("com.github.walker84837:JResult:1.4.0")
     compileOnly("org.postgresql:postgresql:42.7.9")
-    compileOnly("org.xerial:sqlite-jdbc:3.51.1.0")
+    compileOnly("org.xerial:sqlite-jdbc:3.51.2.0")
 
     testImplementation("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
     testImplementation("org.junit.jupiter:junit-jupiter:6.0.2")
