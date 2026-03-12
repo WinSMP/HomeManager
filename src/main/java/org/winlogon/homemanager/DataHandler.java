@@ -7,7 +7,7 @@ import org.bukkit.entity.Player;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
+import java.util.UUID;
 
 public interface DataHandler {
     Result<Void, DatabaseError> updateHome(Player player, String homeName, Location location);
@@ -15,6 +15,13 @@ public interface DataHandler {
     Optional<Boolean> createHome(Player player, String homeName, Location location);
     Optional<Location> getHomeLocation(Player player, String homeName);
     List<String> getHomes(Player player);
+
+    List<Home> getAllHomes();
+    List<Home> getPlayerHomes(UUID playerUuid);
+    Result<Void, DatabaseError> importHome(Home home);
+    Result<Void, DatabaseError> importHomes(List<Home> homes);
+    Result<Void, DatabaseError> deleteHomeByUuid(UUID playerUuid, String homeName);
+    boolean homeExists(UUID playerUuid, String homeName);
 
     default PaginatedResult getHomesPaginated(Player player, int page, int pageSize) {
         List<String> allHomes = getHomes(player);

@@ -14,3 +14,8 @@ postgres:
 
 # Number of homes to display per page in the /home list command
 page-size: 5
+
+# Export settings
+export:
+  # Directory to export homes to (relative to plugin data folder)
+  directory: "exports"
