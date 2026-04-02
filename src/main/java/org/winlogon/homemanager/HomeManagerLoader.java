@@ -20,8 +20,8 @@ public class HomeManagerLoader implements PluginLoader {
 
         var deps = new Dependency[] {
             addDependency("com.github.walker84837", "JResult", "1.4.0"),
-            addDependency("org.postgresql", "postgresql", "42.7.9"),
-            addDependency("org.xerial", "sqlite-jdbc", "3.51.1.0"),
+            addDependency("org.postgresql", "postgresql", "42.7.10"),
+            addDependency("org.xerial", "sqlite-jdbc", "3.51.3.0"),
         };
 
         for (var repository : repos) {
