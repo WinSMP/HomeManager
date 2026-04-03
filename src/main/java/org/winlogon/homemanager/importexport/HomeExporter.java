@@ -40,10 +40,6 @@ public class HomeExporter {
         
         Path exportPath = pluginDataFolder.resolve(exportDirectory).resolve(format.getCommandName());
         
-        // Create backup directory path for timestamped backups
-        // TODO: "Variable 'backupBasePath' is never used"
-        Path backupBasePath = exportPath;
-        
         try {
             homeFormat.writeHomes(exportPath, allHomes);
         } catch (IOException e) {

@@ -13,7 +13,6 @@ import org.winlogon.homemanager.database.SQLiteHandler;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -22,7 +21,6 @@ public class HomeManagerPlugin extends JavaPlugin {
     private static final String POSTGRES = "postgres.";
     private final String IGNORE_EMPTY_PASSWORD = "homemanager.ignore-empty-password";
 
-    private DataHandler databaseHandler;
     private QueryRunner queryRunner;
     private FileConfiguration config;
     private static Logger logger;
@@ -38,7 +36,9 @@ public class HomeManagerPlugin extends JavaPlugin {
         saveDefaultConfig();
         this.config = getConfig();
         logger = getLogger();
-        int pageSize = config.getInt("page-size", 5);
+
+        DataHandler databaseHandler;
+        int pageSize;
 
         try {
             DataSource dataSource = setupDataSource();
@@ -62,7 +62,7 @@ public class HomeManagerPlugin extends JavaPlugin {
             return;
         }
 
-        var commandHandler = new CommandHandler<DataHandler>(databaseHandler, this, pageSize);
+        var commandHandler = new CommandHandler<>(databaseHandler, this, pageSize);
         commandHandler.registerCommands();
     }
 
@@ -93,11 +93,11 @@ public class HomeManagerPlugin extends JavaPlugin {
         var user = config.getString(POSTGRES + "username", "postgres");
         var password = config.getString(POSTGRES + "password");
 
-        // Avoid admins from doing the silly mistake of letting the password empty
-        if (password == null && getPasswordOverride().orElse(false)) {
-            Objects.requireNonNull(
-                password, "The password must be set! If you want to override this, run this with -D%s=true"
-                        .formatted(IGNORE_EMPTY_PASSWORD)
+        // Avoid admins from committing the silly mistake of letting the password empty
+        if (password == null && !getPasswordOverride().orElse(false)) {
+            throw new IllegalStateException(
+                "PostgreSQL password is not set! If you want to allow empty password, run with -D%s=true"
+                    .formatted(IGNORE_EMPTY_PASSWORD)
             );
         }
 

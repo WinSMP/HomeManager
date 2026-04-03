@@ -2,7 +2,6 @@ package org.winlogon.homemanager;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.World;
 
 import java.util.UUID;
 
@@ -17,7 +16,7 @@ public record Home(
     Float pitch
 ) {
     public Location toLocation() {
-        World world = Bukkit.getWorld(worldName);
+        var world = Bukkit.getWorld(worldName);
         if (world == null) {
             return null;
         }

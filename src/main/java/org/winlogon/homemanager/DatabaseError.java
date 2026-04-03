@@ -12,8 +12,4 @@ public enum DatabaseError {
     DatabaseError(String message) {
         this.message = message;
     }
-
-    public String getMessage() {
-        return message;
-    }
 }
