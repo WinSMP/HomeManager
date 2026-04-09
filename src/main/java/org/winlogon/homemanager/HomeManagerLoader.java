@@ -7,11 +7,12 @@ import io.papermc.paper.plugin.loader.PluginLoader;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.graph.Dependency;
 import org.eclipse.aether.repository.RemoteRepository;
+import org.jspecify.annotations.NonNull;
 
 @SuppressWarnings("UnstableApiUsage")
 public class HomeManagerLoader implements PluginLoader {
     @Override 
-    public void classloader(PluginClasspathBuilder classpathBuilder) {
+    public void classloader(@NonNull PluginClasspathBuilder classpathBuilder) {
         var resolver = new MavenLibraryResolver();
 
         var repos = new RemoteRepository[] {
@@ -21,8 +22,8 @@ public class HomeManagerLoader implements PluginLoader {
 
         var deps = new Dependency[] {
             addDependency("com.github.walker84837", "JResult", "1.4.0"),
-            addDependency("org.postgresql", "postgresql", "42.7.9"),
-            addDependency("org.xerial", "sqlite-jdbc", "3.51.1.0"),
+            addDependency("org.postgresql", "postgresql", "42.7.10"),
+            addDependency("org.xerial", "sqlite-jdbc", "3.51.3.0"),
         };
 
         for (var repository : repos) {

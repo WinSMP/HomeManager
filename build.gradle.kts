@@ -3,7 +3,7 @@ import java.util.Date
 import java.util.TimeZone
 
 plugins {
-    id("com.gradleup.shadow") version "9.3.2"
+    id("com.gradleup.shadow") version "9.4.1"
     java
 }
 
@@ -75,7 +75,7 @@ dependencies {
 
     compileOnly("com.github.walker84837:JResult:1.4.0")
     compileOnly("org.postgresql:postgresql:42.7.10")
-    compileOnly("org.xerial:sqlite-jdbc:3.51.2.0")
+    compileOnly("org.xerial:sqlite-jdbc:3.51.3.0")
 
     testImplementation("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
     testImplementation("org.junit.jupiter:junit-jupiter:6.0.3")
