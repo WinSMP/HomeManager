@@ -12,7 +12,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+/**
+ * Implements <a href="https://www.spigotmc.org/resources/%E3%80%90ultimatehomes%E3%80%91-highly-configurable-player-sethome-system-1-8-1-21-11.64210/">UltimateHomes</a>'s home format.
+ */
 public class UltimateHomesFormat implements HomeFormat {
     private static final String PLAYERDATA_FOLDER = "playerdata";
 
@@ -30,18 +34,18 @@ public class UltimateHomesFormat implements HomeFormat {
             return homes;
         }
 
-        Files.list(playerdataDir)
-            .filter(path -> path.toString().endsWith(".yml"))
-            .forEach(file -> {
+        try (Stream<Path> paths = Files.list(playerdataDir)) {
+            paths.filter(path -> path.toString().endsWith(".yml"))
+                .forEach(file -> {
                 try {
-                    YamlConfiguration config = YamlConfiguration.loadConfiguration(file.toFile());
-                    UUID playerUuid = UUID.fromString(file.getFileName().toString().replace(".yml", ""));
+                    var config = YamlConfiguration.loadConfiguration(file.toFile());
+                    var playerUuid = UUID.fromString(file.getFileName().toString().replace(".yml", ""));
 
                     if (config.contains("homes")) {
                         Map<String, ?> homesSection = config.getConfigurationSection("homes").getValues(false);
                         for (Map.Entry<String, ?> entry : homesSection.entrySet()) {
                             String homeName = entry.getKey();
-                            Map<String, Object> homeData = (Map<String, Object>) entry.getValue();
+                            var homeData = (Map<String, Object>) entry.getValue();
 
                             Home home = parseHome(playerUuid, homeName, homeData);
                             if (home != null) {
@@ -53,6 +57,7 @@ public class UltimateHomesFormat implements HomeFormat {
                     // Skip invalid files
                 }
             });
+        }
 
         return homes;
     }
@@ -102,32 +107,15 @@ public class UltimateHomesFormat implements HomeFormat {
             String world = (String) data.get("world");
             if (world == null) return null;
 
-            // UltimateHomes stores coordinates as integers
-            double x = getIntOrDoubleOrDefault(data, "x", 0);
-            double y = getIntOrDoubleOrDefault(data, "y", 0);
-            double z = getIntOrDoubleOrDefault(data, "z", 0);
-            float yaw = getFloatOrDefault(data, "yaw", 0f);
-            float pitch = getFloatOrDefault(data, "pitch", 0f);
+            double x = (int) Math.floor(HomeFormatUtils.getNumber(data, "x", 0));
+            double y = (int) Math.floor(HomeFormatUtils.getNumber(data, "y", 0));
+            double z = (int) Math.floor(HomeFormatUtils.getNumber(data, "z", 0));
+            float yaw = HomeFormatUtils.getFloat(data, "yaw", 0f);
+            float pitch = HomeFormatUtils.getFloat(data, "pitch", 0f);
 
             return new Home(playerUuid, homeName, world, x, y, z, yaw, pitch);
         } catch (Exception e) {
             return null;
         }
-    }
-
-    private double getIntOrDoubleOrDefault(Map<String, Object> map, String key, double defaultValue) {
-        Object value = map.get(key);
-        if (value instanceof Number) {
-            return ((Number) value).doubleValue();
-        }
-        return defaultValue;
-    }
-
-    private float getFloatOrDefault(Map<String, Object> map, String key, float defaultValue) {
-        Object value = map.get(key);
-        if (value instanceof Number) {
-            return ((Number) value).floatValue();
-        }
-        return defaultValue;
     }
 }

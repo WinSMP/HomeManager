@@ -14,6 +14,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * Implements <a href="https://modrinth.com/plugin/sethome">SetHome</a>'s home format.
+ */
 public class SetHomeFormat implements HomeFormat {
     private static final String HOMES_FILE = "homes.yml";
 
@@ -35,16 +38,16 @@ public class SetHomeFormat implements HomeFormat {
 
         for (String uuidString : config.getKeys(false)) {
             try {
-                UUID playerUuid = UUID.fromString(uuidString);
+                var playerUuid = UUID.fromString(uuidString);
 
                 if (config.contains(uuidString)) {
                     Map<String, ?> playerHomes = config.getConfigurationSection(uuidString).getValues(false);
 
                     for (Map.Entry<String, ?> entry : playerHomes.entrySet()) {
                         String homeName = entry.getKey();
-                        Map<String, Object> homeData = (Map<String, Object>) entry.getValue();
+                        var homeData = (Map<String, Object>) entry.getValue();
 
-                        Home home = parseHome(playerUuid, homeName, homeData);
+                        var home = parseHome(playerUuid, homeName, homeData);
                         if (home != null) {
                             homes.add(home);
                         }
@@ -71,7 +74,7 @@ public class SetHomeFormat implements HomeFormat {
 
         YamlConfiguration config = new YamlConfiguration();
 
-        for (Home home : homes) {
+        for (var home : homes) {
             String uuidKey = home.playerUuid().toString();
             config.set(uuidKey + "." + home.homeName() + ".world", home.worldName());
             config.set(uuidKey + "." + home.homeName() + ".x", home.x());
@@ -91,7 +94,7 @@ public class SetHomeFormat implements HomeFormat {
 
     private Home parseHome(UUID playerUuid, String homeName, Map<String, Object> data) {
         try {
-            String world = (String) data.get("world");
+            var world = (String) data.get("world");
             if (world == null) return null;
 
             double x = getDoubleOrDefault(data, "x", 0.0);
@@ -108,16 +111,16 @@ public class SetHomeFormat implements HomeFormat {
 
     private double getDoubleOrDefault(Map<String, Object> map, String key, double defaultValue) {
         Object value = map.get(key);
-        if (value instanceof Number) {
-            return ((Number) value).doubleValue();
+        if (value instanceof Number val) {
+            return val.doubleValue();
         }
         return defaultValue;
     }
 
     private float getFloatOrDefault(Map<String, Object> map, String key, float defaultValue) {
         Object value = map.get(key);
-        if (value instanceof Number) {
-            return ((Number) value).floatValue();
+        if (value instanceof Number val) {
+            return val.floatValue();
         }
         return defaultValue;
     }

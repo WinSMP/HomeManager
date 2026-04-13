@@ -14,6 +14,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * Implements a simple YAML export format, not tied to any plugin but useful for translating to custom plugins.
+ */
 public class UniversalYamlFormat implements HomeFormat {
     private static final String EXPORT_FILENAME = "homes.yml";
 
@@ -40,14 +43,14 @@ public class UniversalYamlFormat implements HomeFormat {
 
         for (String uuidString : config.getKeys(false)) {
             try {
-                UUID playerUuid = UUID.fromString(uuidString);
+                var playerUuid = UUID.fromString(uuidString);
 
                 if (config.contains(uuidString)) {
                     Map<String, ?> playerHomes = config.getConfigurationSection(uuidString).getValues(false);
 
                     for (Map.Entry<String, ?> entry : playerHomes.entrySet()) {
                         String homeName = entry.getKey();
-                        Map<String, Object> homeData = (Map<String, Object>) entry.getValue();
+                        var homeData = (Map<String, Object>) entry.getValue();
 
                         Home home = parseHome(playerUuid, homeName, homeData);
                         if (home != null) {
@@ -114,16 +117,16 @@ public class UniversalYamlFormat implements HomeFormat {
 
     private double getDoubleOrDefault(Map<String, Object> map, String key, double defaultValue) {
         Object value = map.get(key);
-        if (value instanceof Number) {
-            return ((Number) value).doubleValue();
+        if (value instanceof Number val) {
+            return val.doubleValue();
         }
         return defaultValue;
     }
 
     private Float getFloatOrNull(Map<String, Object> map, String key) {
         Object value = map.get(key);
-        if (value instanceof Number) {
-            return ((Number) value).floatValue();
+        if (value instanceof Number val) {
+            return val.floatValue();
         }
         return null;
     }

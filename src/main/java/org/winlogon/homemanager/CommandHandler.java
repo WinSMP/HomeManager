@@ -197,9 +197,9 @@ public class CommandHandler<Handler extends DataHandler> {
 
     private String[] getHomes(SuggestionInfo<CommandSender> info) {
         if (info.sender() instanceof Player player) {
-            return databaseHandler.getHomes(player).toArray(new String[0]);
+            return databaseHandler.getHomes(player).toArray(String[]::new);
         }
-        return new String[0];
+        return new String[] {};
     }
 
     private void listHomes(Player player, CommandArguments args) {

@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class EssentialsXFormat implements HomeFormat {
     private static final String USERDATA_FOLDER = "userdata";
@@ -30,29 +31,18 @@ public class EssentialsXFormat implements HomeFormat {
             return homes;
         }
 
-        Files.list(userdataDir)
-            .filter(path -> path.toString().endsWith(".yml"))
-            .forEach(file -> {
-                try {
-                    YamlConfiguration config = YamlConfiguration.loadConfiguration(file.toFile());
-                    UUID playerUuid = UUID.fromString(file.getFileName().toString().replace(".yml", ""));
-
-                    if (config.contains("homes")) {
-                        Map<String, ?> homesSection = config.getConfigurationSection("homes").getValues(false);
-                        for (Map.Entry<String, ?> entry : homesSection.entrySet()) {
-                            String homeName = entry.getKey();
-                            Map<String, Object> homeData = (Map<String, Object>) entry.getValue();
-
-                            Home home = parseHome(playerUuid, homeName, homeData);
-                            if (home != null) {
-                                homes.add(home);
-                            }
-                        }
+        try (Stream<Path> paths = Files.list(userdataDir)) {
+            paths.filter(path -> path.toString().endsWith(".yml"))
+                .forEach(file -> {
+                    try {
+                        var config = YamlConfiguration.loadConfiguration(file.toFile());
+                        var uuid = UUID.fromString(file.getFileName().toString().replace(".yml", ""));
+                        homes.addAll(loadPlayerHomes(uuid, config));
+                    } catch (Exception e) {
+                        // Skip invalid files
                     }
-                } catch (Exception e) {
-                    // Skip invalid files
-                }
-            });
+                });
+        }
 
         return homes;
     }
@@ -75,7 +65,7 @@ public class EssentialsXFormat implements HomeFormat {
                         config = new YamlConfiguration();
                     }
 
-                    for (Home home : playerHomes) {
+                    for (var home : playerHomes) {
                         config.set("homes." + home.homeName() + ".world", home.worldName());
                         config.set("homes." + home.homeName() + ".x", home.x());
                         config.set("homes." + home.homeName() + ".y", home.y());
@@ -98,14 +88,14 @@ public class EssentialsXFormat implements HomeFormat {
 
     private Home parseHome(UUID playerUuid, String homeName, Map<String, Object> data) {
         try {
-            String world = (String) data.get("world");
+            var world = (String) data.get("world");
             if (world == null) return null;
 
-            double x = getDoubleOrDefault(data, "x", 0.0);
-            double y = getDoubleOrDefault(data, "y", 0.0);
-            double z = getDoubleOrDefault(data, "z", 0.0);
-            float yaw = getFloatOrDefault(data, "yaw", 0f);
-            float pitch = getFloatOrDefault(data, "pitch", 0f);
+            double x = HomeFormatUtils.getNumber(data, "x", 0.0);
+            double y = HomeFormatUtils.getNumber(data, "y", 0.0);
+            double z = HomeFormatUtils.getNumber(data, "z", 0.0);
+            float yaw = HomeFormatUtils.getFloat(data, "yaw", 0f);
+            float pitch = HomeFormatUtils.getFloat(data, "pitch", 0f);
 
             return new Home(playerUuid, homeName, world, x, y, z, yaw, pitch);
         } catch (Exception e) {
@@ -113,19 +103,21 @@ public class EssentialsXFormat implements HomeFormat {
         }
     }
 
-    private double getDoubleOrDefault(Map<String, Object> map, String key, double defaultValue) {
-        Object value = map.get(key);
-        if (value instanceof Number) {
-            return ((Number) value).doubleValue();
-        }
-        return defaultValue;
-    }
+    private List<Home> loadPlayerHomes(UUID playerUuid, YamlConfiguration config) {
+        if (!config.contains("homes")) return List.of();
 
-    private float getFloatOrDefault(Map<String, Object> map, String key, float defaultValue) {
-        Object value = map.get(key);
-        if (value instanceof Number) {
-            return ((Number) value).floatValue();
+        var homesSection = config.getConfigurationSection("homes");
+        if (homesSection == null) return List.of();
+
+        Map<String, ?> homesMap = homesSection.getValues(false);
+        List<Home> homes = new ArrayList<>();
+
+        for (Map.Entry<String, ?> entry : homesMap.entrySet()) {
+            if (entry.getValue() instanceof Map) {
+                var home = parseHome(playerUuid, entry.getKey(), (Map<String, Object>) entry.getValue());
+                if (home != null) homes.add(home);
+            }
         }
-        return defaultValue;
+        return homes;
     }
 }
