@@ -39,8 +39,8 @@ val minecraftPatch = rootProject.extra["minecraftPatch"] as String
 val projectDescription = rootProject.extra["projectDescription"] as String
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
 }
 
 repositories {
@@ -70,14 +70,13 @@ repositories {
 }
 
 dependencies {
-    implementation("dev.jorel:commandapi-paper-shade:11.1.0")
-    compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
-
+    compileOnly("io.papermc.paper:paper-api:26.1.2.build.53-stable")
+    implementation("dev.jorel:commandapi-paper-shade:11.2.0")
     compileOnly("com.github.walker84837:JResult:1.4.0")
-    compileOnly("org.postgresql:postgresql:42.7.10")
-    compileOnly("org.xerial:sqlite-jdbc:3.51.3.0")
+    compileOnly("org.postgresql:postgresql:42.7.11")
+    compileOnly("org.xerial:sqlite-jdbc:3.53.0.0")
 
-    testImplementation("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
+    testImplementation("io.papermc.paper:paper-api:26.1.2.build.53-stable")
     testImplementation("org.junit.jupiter:junit-jupiter:6.0.3")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.0.3")
 }

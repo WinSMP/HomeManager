@@ -19,7 +19,7 @@ jobs:
     strategy:
       matrix:
         os: [ ubuntu-latest, windows-latest ]
-        java: [ 21 ]
+        java: [ 25 ]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout code
@@ -57,7 +57,7 @@ jobs:
       - name: Common Setup
         uses: ./.github/actions/common-setup
         with:
-          java-version: 21
+          java-version: 25
 
       - name: Publish with Gradle
         run: ./gradlew -Pver="0.0.0-RC-1" release
