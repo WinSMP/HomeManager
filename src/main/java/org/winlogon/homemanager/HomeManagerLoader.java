@@ -24,6 +24,7 @@ public class HomeManagerLoader implements PluginLoader {
             addDependency("com.github.walker84837", "JResult", "1.4.0"),
             addDependency("org.postgresql", "postgresql", "42.7.10"),
             addDependency("org.xerial", "sqlite-jdbc", "3.51.3.0"),
+            addDependency("com.zaxxer", "HikariCP", "6.2.1"),
         };
 
         for (var repository : repos) {

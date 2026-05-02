@@ -17,6 +17,8 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import java.util.concurrent.CompletableFuture;
+
 /**
  * Abstract base class for database handlers that manage home storage.
  * <p>
@@ -28,12 +30,24 @@ import java.util.logging.Logger;
  */
 public abstract class AbstractDatabaseHandler implements DataHandler {
     protected final QueryRunner dbManager;
+    protected final AsyncDatabaseExecutor asyncExecutor;
     protected final Logger logger;
 
-    protected AbstractDatabaseHandler(QueryRunner dbManager, Logger logger) {
+    protected AbstractDatabaseHandler(QueryRunner dbManager, AsyncDatabaseExecutor asyncExecutor, Logger logger) {
         this.dbManager = dbManager;
+        this.asyncExecutor = asyncExecutor;
         this.logger = logger;
         init();
+    }
+
+    @Override
+    public CompletableFuture<Optional<Location>> getHomeLocationAsync(Player player, String homeName) {
+        return asyncExecutor.supply(() -> getHomeLocation(player, homeName));
+    }
+
+    @Override
+    public CompletableFuture<List<String>> getHomesAsync(Player player) {
+        return asyncExecutor.supply(() -> getHomes(player));
     }
 
     /**
@@ -66,14 +80,17 @@ public abstract class AbstractDatabaseHandler implements DataHandler {
 
     private void init() {
         String createTableSql = getCreateTableSql();
-        dbManager.execute(connection -> {
-            try (var stmt = connection.createStatement()) {
-                stmt.executeUpdate(createTableSql);
-                migrateSchema(connection);
-            } catch (SQLException e) {
-                logger.log(Level.SEVERE, "Failed to create or verify 'homes' table", e);
-            }
-        });
+        try {
+            dbManager.executeQuery(connection -> {
+                try (var stmt = connection.createStatement()) {
+                    stmt.executeUpdate(createTableSql);
+                    migrateSchema(connection);
+                }
+                return null;
+            });
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Failed to create or verify 'homes' table", e);
+        }
     }
 
     protected String getCreateTableSql() {

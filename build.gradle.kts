@@ -75,9 +75,14 @@ dependencies {
     compileOnly("com.github.walker84837:JResult:1.4.0")
     compileOnly("org.postgresql:postgresql:42.7.11")
     compileOnly("org.xerial:sqlite-jdbc:3.53.1.0")
+    compileOnly("com.zaxxer:HikariCP:6.2.1")
 
     testImplementation("io.papermc.paper:paper-api:26.1.2.build.68-stable")
     testImplementation("org.junit.jupiter:junit-jupiter:6.1.0")
+    testImplementation("org.postgresql:postgresql:42.7.11")
+    testImplementation("org.xerial:sqlite-jdbc:3.53.1.0")
+    testImplementation("com.zaxxer:HikariCP:6.2.1")
+    testImplementation("org.mockbukkit.mockbukkit:mockbukkit-v26.1.2:4.114.0")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.0.3")
 }
 

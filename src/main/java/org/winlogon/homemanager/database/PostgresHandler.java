@@ -4,8 +4,8 @@ import java.sql.Types;
 import java.util.logging.Logger;
 
 public class PostgresHandler extends AbstractDatabaseHandler {
-    public PostgresHandler(QueryRunner dbManager, Logger logger) {
-        super(dbManager, logger);
+    public PostgresHandler(QueryRunner dbManager, AsyncDatabaseExecutor asyncExecutor, Logger logger) {
+        super(dbManager, asyncExecutor, logger);
     }
 
     @Override
@@ -24,7 +24,8 @@ public class PostgresHandler extends AbstractDatabaseHandler {
             INSERT INTO homes (player_uuid, home_name, world_name, x, y, z, yaw, pitch)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT (player_uuid, home_name) DO UPDATE SET
-            world_name = EXCLUDED.world_name, x = EXCLUDED.x, y = EXCLUDED.y, z = EXCLUDED.z, yaw = EXCLUDED.yaw, pitch = EXCLUDED.pitch""";
+            world_name = EXCLUDED.world_name, x = EXCLUDED.x, y = EXCLUDED.y, z = EXCLUDED.z, yaw = EXCLUDED.yaw, pitch = EXCLUDED.pitch
+            """;
     }
 
     @Override

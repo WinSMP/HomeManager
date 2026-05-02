@@ -7,9 +7,14 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.postgresql.ds.PGSimpleDataSource;
 import org.sqlite.SQLiteDataSource;
+import org.winlogon.homemanager.database.AsyncDatabaseExecutor;
+import org.winlogon.homemanager.database.CachedDataHandler;
 import org.winlogon.homemanager.database.QueryRunner;
 import org.winlogon.homemanager.database.PostgresHandler;
 import org.winlogon.homemanager.database.SQLiteHandler;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerQuitEvent;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;
@@ -17,25 +22,28 @@ import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class HomeManagerPlugin extends JavaPlugin {
+public class HomeManagerPlugin extends JavaPlugin implements Listener {
     private static final String POSTGRES = "postgres.";
     private final String IGNORE_EMPTY_PASSWORD = "homemanager.ignore-empty-password";
 
     private QueryRunner queryRunner;
+    private AsyncDatabaseExecutor asyncDatabaseExecutor;
+    private CachedDataHandler cachedDataHandler;
     private FileConfiguration config;
     private static Logger logger;
 
     @Override
     public void onLoad() {
         CommandAPI.onLoad(new CommandAPIPaperConfig(this).verboseOutput(true));
+        this.asyncDatabaseExecutor = new AsyncDatabaseExecutor(this);
+        saveDefaultConfig();
+        this.config = getConfig();
+        logger = getLogger();
     }
 
     @Override
     public void onEnable() {
         CommandAPI.onEnable();
-        saveDefaultConfig();
-        this.config = getConfig();
-        logger = getLogger();
 
         DataHandler databaseHandler;
         int pageSize;
@@ -48,22 +56,25 @@ public class HomeManagerPlugin extends JavaPlugin {
 
             boolean isPostgres = config.getBoolean(POSTGRES + "enabled", false);
             if (isPostgres) {
-                databaseHandler = new PostgresHandler(queryRunner, logger);
+                databaseHandler = new PostgresHandler(queryRunner, asyncDatabaseExecutor, logger);
                 logger.info("Using PostgreSQL for home storage.");
             } else {
-                databaseHandler = new SQLiteHandler(queryRunner, logger);
+                databaseHandler = new SQLiteHandler(queryRunner, asyncDatabaseExecutor, logger);
                 logger.info("Using SQLite for home storage.");
             }
-            pageSize = config.getInt("page-size", 5);
 
-        } catch (SQLException e) {
+            this.cachedDataHandler = new CachedDataHandler(databaseHandler);
+            pageSize = config.getInt("page-size", 5);
+        } catch (Exception e) {
             logger.log(Level.SEVERE, "Failed to initialize database connection pool. Disabling plugin.", e);
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
 
-        var commandHandler = new CommandHandler<>(databaseHandler, this, pageSize);
+        var commandHandler = new CommandHandler<>(cachedDataHandler, this, pageSize);
         commandHandler.registerCommands();
+
+        getServer().getPluginManager().registerEvents(this, this);
     }
 
     @Override
@@ -71,6 +82,16 @@ public class HomeManagerPlugin extends JavaPlugin {
         CommandAPI.onDisable();
         if (queryRunner != null) {
             queryRunner.shutdown();
+        }
+        if (asyncDatabaseExecutor != null) {
+            asyncDatabaseExecutor.shutdown();
+        }
+    }
+
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        if (cachedDataHandler != null) {
+            cachedDataHandler.invalidate(event.getPlayer().getUniqueId());
         }
     }
 

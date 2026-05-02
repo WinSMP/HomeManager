@@ -7,13 +7,29 @@ import org.bukkit.entity.Player;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 public interface DataHandler {
     Result<Void, DatabaseError> updateHome(Player player, String homeName, Location location);
     Result<Void, DatabaseError> deleteHome(Player player, String homeName);
     Optional<Boolean> createHome(Player player, String homeName, Location location);
     Optional<Location> getHomeLocation(Player player, String homeName);
+
+    // Async versions
+    CompletableFuture<Optional<Location>> getHomeLocationAsync(Player player, String homeName);
+    CompletableFuture<List<String>> getHomesAsync(Player player);
+
     List<String> getHomes(Player player);
+
+    /**
+     * Returns a list of home names for the player.
+     * Implementations may cache this list to avoid blocking the caller.
+     */
+    default List<String> getHomesCached(UUID playerUuid) {
+        // Default implementation for non-caching handlers
+        return getPlayerHomes(playerUuid).stream().map(Home::homeName).toList();
+    }
+
     default List<String> getHomes(Player player, int offset, int limit) {
         return getHomes(player).subList(offset, Math.min(offset + limit, getHomes(player).size()));
     }
