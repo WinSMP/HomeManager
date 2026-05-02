@@ -73,7 +73,7 @@ dependencies {
     compileOnly("io.papermc.paper:paper-api:26.1.2.build.53-stable")
     implementation("dev.jorel:commandapi-paper-shade:11.2.0")
     compileOnly("com.github.walker84837:JResult:1.4.0")
-    compileOnly("org.postgresql:postgresql:42.7.10")
+    compileOnly("org.postgresql:postgresql:42.7.11")
     compileOnly("org.xerial:sqlite-jdbc:3.53.0.0")
 
     testImplementation("io.papermc.paper:paper-api:26.1.2.build.53-stable")
