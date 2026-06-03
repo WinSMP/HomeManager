@@ -70,13 +70,13 @@ repositories {
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:26.1.2.build.53-stable")
+    compileOnly("io.papermc.paper:paper-api:26.1.2.build.68-stable")
     implementation("dev.jorel:commandapi-paper-shade:11.2.0")
     compileOnly("com.github.walker84837:JResult:1.4.0")
     compileOnly("org.postgresql:postgresql:42.7.11")
     compileOnly("org.xerial:sqlite-jdbc:3.53.0.0")
 
-    testImplementation("io.papermc.paper:paper-api:26.1.2.build.53-stable")
+    testImplementation("io.papermc.paper:paper-api:26.1.2.build.68-stable")
     testImplementation("org.junit.jupiter:junit-jupiter:6.0.3")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.0.3")
 }
