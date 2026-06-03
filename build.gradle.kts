@@ -78,7 +78,7 @@ dependencies {
 
     testImplementation("io.papermc.paper:paper-api:26.1.2.build.68-stable")
     testImplementation("org.junit.jupiter:junit-jupiter:6.1.0")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.0.3")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.1.0")
 }
 
 tasks.test {
