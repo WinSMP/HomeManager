@@ -70,21 +70,21 @@ repositories {
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:26.1.2.build.68-stable")
-    implementation("dev.jorel:commandapi-paper-shade:11.2.0")
-    compileOnly("com.github.walker84837:JResult:1.4.0")
-    compileOnly("org.postgresql:postgresql:42.7.11")
-    compileOnly("org.xerial:sqlite-jdbc:3.53.1.0")
-    compileOnly("com.zaxxer:HikariCP:6.2.1")
+    compileOnly(libs.paper.api)
+    implementation(libs.commandapi.paper.shade)
+    compileOnly(libs.jresult)
+    compileOnly(libs.postgresql)
+    compileOnly(libs.sqlite.jdbc)
+    compileOnly(libs.hikaricp)
 
-    testImplementation("io.papermc.paper:paper-api:26.1.2.build.68-stable")
-    testImplementation("org.junit.jupiter:junit-jupiter:6.1.0")
-    testImplementation("org.postgresql:postgresql:42.7.11")
-    testImplementation("org.xerial:sqlite-jdbc:3.53.1.0")
-    testImplementation("com.zaxxer:HikariCP:6.2.1")
-    testImplementation("org.mockbukkit.mockbukkit:mockbukkit-v26.1.2:4.114.0")
+    testImplementation(libs.paper.api)
+    testImplementation(libs.junit.jupiter)
+    testImplementation(libs.postgresql)
+    testImplementation(libs.sqlite.jdbc)
+    testImplementation(libs.hikaricp)
+    testImplementation(libs.mockbukkit)
 
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.0.3")
+    testRuntimeOnly(libs.junit.platform.launcher)
 }
 
 tasks.test {
