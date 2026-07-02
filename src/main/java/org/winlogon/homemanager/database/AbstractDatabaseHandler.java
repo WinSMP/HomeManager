@@ -204,7 +204,8 @@ public abstract class AbstractDatabaseHandler implements DataHandler {
                     stmt.executeUpdate();
                     return Optional.of(true);
                 } catch (SQLException e) {
-                    if (getDuplicateErrorCode().equals(e.getSQLState())) {
+                    String dupCode = getDuplicateErrorCode();
+                    if (dupCode.equals(e.getSQLState()) || dupCode.equals(String.valueOf(e.getErrorCode()))) {
                         return Optional.of(false);
                     } else {
                         throw e;

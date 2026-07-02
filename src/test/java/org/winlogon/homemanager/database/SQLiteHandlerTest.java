@@ -3,103 +3,93 @@ package org.winlogon.homemanager.database;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockbukkit.mockbukkit.MockBukkit;
+import org.mockbukkit.mockbukkit.ServerMock;
 import org.sqlite.SQLiteDataSource;
 
-import java.lang.reflect.Proxy;
 import java.sql.SQLException;
-import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class SQLiteHandlerTest {
+    private ServerMock server;
+    private TestPlugin plugin;
     private SQLiteHandler handler;
+    private Player player;
+    private World world;
 
-    @SuppressWarnings("unchecked")
-    private <T> T createProxy(Class<T> clazz, Map<String, Object> methods) {
-        return (T) Proxy.newProxyInstance(
-            clazz.getClassLoader(),
-            new Class<?>[]{clazz},
-            (_, method, _) -> {
-                if (methods.containsKey(method.getName())) {
-                    return methods.get(method.getName());
-                }
-                if (method.getReturnType().equals(Void.TYPE)) {
-                    return null;
-                }
-                // Return default values for common types
-                if (method.getReturnType().equals(String.class)) return "";
-                if (method.getReturnType().equals(Boolean.TYPE)) return false;
-                if (method.getReturnType().equals(Integer.TYPE)) return 0;
-                return null;
-            }
-        );
+    @BeforeEach
+    void setUp() throws SQLException {
+        server = MockBukkit.mock();
+        plugin = MockBukkit.load(TestPlugin.class);
+
+        Logger logger = plugin.getLogger();
+        SQLiteDataSource ds = new SQLiteDataSource();
+        ds.setUrl("jdbc:sqlite::memory:");
+
+        QueryRunner queryRunner = new QueryRunner(plugin, ds, 1);
+        AsyncDatabaseExecutor asyncExecutor = new AsyncDatabaseExecutor(plugin);
+        handler = new SQLiteHandler(queryRunner, asyncExecutor, logger);
+
+        world = server.addSimpleWorld("test_world");
+        player = server.addPlayer();
+    }
+
+    @AfterEach
+    void tearDown() {
+        MockBukkit.unmock();
     }
 
     @Test
-    void testCreateAndGetHome() throws SQLException {
-        Plugin plugin = createProxy(Plugin.class, Map.of(
-            "getLogger", Logger.getLogger("TestLogger"),
-            "getName", "TestPlugin"
-        ));
+    void testCreateAndGetHome() {
+        Location loc = new Location(world, 10, 64, 20, 90f, 0f);
 
-        var ds = new SQLiteDataSource();
-        ds.setUrl("jdbc:sqlite::memory:");
+        // Test creation
+        var created = handler.createHome(player, "my-home", loc);
+        assertTrue(created.isPresent(), "Result should be present");
+        assertTrue(created.get(), "Home should be created");
 
-        var queryRunner = new QueryRunner(plugin, ds, 1);
-        var asyncExecutor = new AsyncDatabaseExecutor(plugin);
-        handler = new SQLiteHandler(queryRunner, asyncExecutor, plugin.getLogger());
+        // Test duplicate
+        var createdDuplicate = handler.createHome(player, "my-home", loc);
+        assertTrue(createdDuplicate.isPresent(), "Result should be present");
+        assertFalse(createdDuplicate.get(), "Duplicate home should not be created");
 
-        var playerUuid = UUID.randomUUID();
-        Player mockPlayer = createProxy(Player.class, Map.of(
-            "getUniqueId", playerUuid,
-            "getName", "TestPlayer"
-        ));
-
-        World mockWorld = createProxy(World.class, Map.of(
-            "getName", "world"
-        ));
-
-        var loc = new Location(mockWorld, 10, 64, 20, 90f, 0f);
-
-        var created = handler.createHome(mockPlayer, "test-home", loc);
-        assertTrue(created.isPresent());
-        assertTrue(created.get());
-
-        var createdDuplicate = handler.createHome(mockPlayer, "test-home", loc);
-        assertTrue(createdDuplicate.isPresent());
-        assertFalse(createdDuplicate.get());
+        // Test retrieval
+        var locOpt = handler.getHomeLocation(player, "my-home");
+        assertTrue(locOpt.isPresent(), "Home location should be found");
+        Location foundLoc = locOpt.get();
+        assertEquals(loc.getX(), foundLoc.getX(), 0.001);
+        assertEquals(loc.getY(), foundLoc.getY(), 0.001);
+        assertEquals(loc.getZ(), foundLoc.getZ(), 0.001);
+        assertEquals(loc.getYaw(), foundLoc.getYaw(), 0.001);
+        assertEquals(loc.getPitch(), foundLoc.getPitch(), 0.001);
+        assertEquals(world.getName(), foundLoc.getWorld().getName());
     }
 
     @Test
-    void testHomeExists() throws SQLException {
-        Plugin plugin = createProxy(Plugin.class, Map.of(
-            "getLogger", Logger.getLogger("TestLogger"),
-            "getName", "TestPlugin"
-        ));
+    void testHomeExists() {
+        Location loc = new Location(world, 10, 64, 20);
+        handler.createHome(player, "exists", loc);
 
-        var ds = new SQLiteDataSource();
-        ds.setUrl("jdbc:sqlite::memory:");
+        assertTrue(handler.homeExists(player.getUniqueId(), "exists"));
+        assertFalse(handler.homeExists(player.getUniqueId(), "not-exists"));
+        assertFalse(handler.homeExists(UUID.randomUUID(), "exists"));
+    }
 
-        var queryRunner = new QueryRunner(plugin, ds, 1);
-        var asyncExecutor = new AsyncDatabaseExecutor(plugin);
-        handler = new SQLiteHandler(queryRunner, asyncExecutor, plugin.getLogger());
+    @Test
+    void testGetHomes() {
+        Location loc = new Location(world, 10, 64, 20);
+        handler.createHome(player, "home1", loc);
+        handler.createHome(player, "home2", loc);
 
-        var playerUuid = UUID.randomUUID();
-        Player mockPlayer = createProxy(Player.class, Map.of(
-            "getUniqueId", playerUuid
-        ));
-
-        World mockWorld = createProxy(World.class, Map.of(
-            "getName", "world"
-        ));
-        var loc = new Location(mockWorld, 10, 64, 20);
-
-        handler.createHome(mockPlayer, "existing", loc);
-        assertTrue(handler.homeExists(playerUuid, "existing"));
-        assertFalse(handler.homeExists(playerUuid, "non-existent"));
+        var homes = handler.getHomes(player);
+        assertEquals(2, homes.size());
+        assertTrue(homes.contains("home1"));
+        assertTrue(homes.contains("home2"));
     }
 }
