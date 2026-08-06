@@ -77,14 +77,20 @@ dependencies {
     compileOnly(libs.sqlite.jdbc)
     compileOnly(libs.hikaricp)
 
-    testImplementation(libs.paper.api)
+    testImplementation(libs.paper.api.test)
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.postgresql)
     testImplementation(libs.sqlite.jdbc)
     testImplementation(libs.hikaricp)
     testImplementation(libs.mockbukkit)
-
     testRuntimeOnly(libs.junit.platform.launcher)
+}
+
+configurations.testCompileClasspath {
+    resolutionStrategy.force("io.papermc.paper:paper-api:${libs.versions.paper.test.ver.get()}")
+}
+configurations.testRuntimeClasspath {
+    resolutionStrategy.force("io.papermc.paper:paper-api:${libs.versions.paper.test.ver.get()}")
 }
 
 tasks.test {
