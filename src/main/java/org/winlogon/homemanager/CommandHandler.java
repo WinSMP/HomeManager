@@ -45,7 +45,7 @@ public class CommandHandler<Handler extends DataHandler> {
         new CommandAPICommand("home")
             .withShortDescription("Manage your homes")
             .withSubcommand(new CommandAPICommand("create")
-                .withArguments(new StringArgument("name"))
+                .withArguments(new StringArgument("home-name"))
                 .executesPlayer(this::createHome))
             .withSubcommand(new CommandAPICommand("list")
                 .withArguments(new IntegerArgument("page").setOptional(true))
